@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js"> <!--<![endif]-->
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <title>SimplePass</title>
+        <meta name="description" content="A simple password manager that stores and encrypts your passwords in Google Drive&#8482;">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="shortcut icon" href="img/favicon.ico" type="image/x-icon">
+        <link rel="icon" href="img/favicon.ico" type="image/x-icon">
+        <link rel="stylesheet" href="css/main.min.css">
+        <link rel="canonical" href="https://michaelharrisonroth.github.io/simplepass/app" />
+        <script>
+            if (!(window.location.host.startsWith("local")) && (window.location.protocol != "https:")) {
+                window.location.protocol = "https";
+            }
+        </script>
+    </head>
+    <body>
+        <!--[if lt IE 9]>
+            <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/?locale=en">upgrade your browser</a> to improve your experience.</p>
+        <![endif]-->
+
+        <img class="webstore" src="img/chrome-webstore.png" />
+
+        <nav class="navbar navbar-default navbar-fixed-top">
+            <div class="navbar-header">
+              <a class="navbar-brand" href="#">
+                <img src="img/logo.png" /> <span>SimplePass</span>
+              </a>
+            </div>
+
+            <input type="text" class="js-filter filter" placeholder="search" />
+
+            <div class="loader">
+                <img src="img/loader.gif" />
+            </div>
+
+            <div class="navbar-collapse">
+                <button class="js-new-row new btn btn-sm btn-success">+</button>
+                <button class="js-save save btn btn-sm btn-primary">&check;</button>
+                <button class="js-download download btn btn-sm btn-warning">download</button>
+                <button class="js-logout logout btn btn-sm btn-danger">logout</button>
+                <div class="generator">
+                    <button class="js-generate btn btn-sm btn-primary">?</button>
+                </div>
+            </div>
+        </nav>
+        
+        <div class="container-fluid">
+
+          <div class="table">
+            
+            <div class="dropdown js-lockers">
+              <button class="btn btn-sm btn-default dropdown-toggle" type="button" id="lockers" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+                Lockers
+                <span class="caret"></span>
+              </button>
+              <ul class="dropdown-menu" aria-labelledby="lockers">
+                
+              </ul>
+              <button class="btn btn-sm btn-danger js-remove-locker">x</button>
+              <button class="btn btn-sm btn-success js-add-locker"><span>+</span><span>&check;</span></button>
+              <input class="js-locker-name" type="text" placeholder="Locker Name" />
+            </div>
+            
+            <div class="row thead">
+                <div class="cell sort js-sort">
+                    Service <span class="darr"></span><span class="uarr"></span>
+                </div>
+                <div class="cell">Email</div>
+                <div class="cell">Username</div>
+                <div class="cell">Password</div>
+                <div class="cell"></div>
+            </div>
+            <div class="tbody">
+                <!-- data goes here -->
+            </div>
+          </div>
+        </div>
+
+        <div class="load-overlay">
+            <button class="js-login btn btn-danger">
+                <img src="img/logo-drive.png"> Connect to Google Drive
+            </button>
+        </div>
+
+        <!-- load app -->
+        <script type="text/javascript" src="js/index.min.js"></script>
+
+        <!-- load google apis -->
+        <script src="https://apis.google.com/js/client.js?onload=gapiCallback"></script>
+    </body>
+</html>

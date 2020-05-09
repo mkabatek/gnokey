@@ -1,0 +1,50 @@
+.dropdown {
+
+    .dropdown-menu {
+
+        li {
+            padding: 3px;
+
+            a {
+                color: $brand-primary;
+                display: block;
+                padding: 3px 20px;
+                clear: both;
+                font-weight: 400;
+                line-height: 1.42857143;
+                white-space: nowrap;
+            }
+
+            a:hover {
+                color: $gray;
+                text-decoration: none;
+                background-color: #f5f5f5;
+            }
+        }
+    }
+    
+    .js-add-locker span {
+        display: none;
+    }
+
+    .js-add-locker.btn-success > span:first-child {
+        display: block;
+    }
+
+    .js-add-locker.btn-primary > span:last-child {
+        display: block;
+    }
+
+    input {
+        display: inline-block;
+        opacity: 0;
+        padding: 3px;
+        transition: all 0.3s ease;
+        width: 0;
+    }
+    
+    input.active {
+        opacity: 1;
+        width: 150px;
+    }
+}

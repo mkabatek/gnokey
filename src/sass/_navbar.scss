@@ -1,0 +1,70 @@
+
+.navbar {
+    background-color: #fff;
+    border: 1px solid #ddd;
+
+    input {
+        float: left;
+        margin-left: 100px;
+        padding: 0 5px;
+    }
+
+    a.navbar-brand {
+        
+        color : $gray-dark;
+        font-size: 1rem;
+        margin-top: -7px;
+
+        img{
+            width: 30px;
+        } 
+
+        span {
+            position: absolute;
+            top: 12px;
+            margin-left: 40px;
+        }
+    }
+
+    .navbar-collapse {
+        display: block;
+        float: right;
+        width: 408px;
+    }
+
+    .btn {
+        float: right;
+    }
+
+    .btn.save,
+    .btn.logout,
+    .btn.download,
+    .btn.new {
+        display: none;
+    }
+
+    .btn.logout,
+    .btn.download,
+    .btn.save {
+        margin-right: 10px;
+    }
+}
+
+body.loaded {
+
+    .btn.save,
+    .btn.logout,
+    .btn.download,
+    .btn.new {
+        display: block;
+    }
+
+}
+
+@media(max-width: 768px) {
+    .navbar {
+        .navbar-collapse {
+            margin-top: 10px;
+        }
+    }
+}

@@ -1,0 +1,18 @@
+{
+  "name": "SimplePass",
+  "description": "A simple password manager that stores and encrypts your passwords in Google Drive.",
+  "version": "0.0.4",
+  "manifest_version": 2,
+  "icons": {
+    "16": "icon_16.png",
+    "128": "icon_128.png"
+  },
+  "app": {
+    "urls": [
+      "https://michaelharrisonroth.github.io/simplepass/app"
+    ],
+    "launch": {
+      "web_url": "https://michaelharrisonroth.github.io/simplepass/app"
+    }
+  }
+}

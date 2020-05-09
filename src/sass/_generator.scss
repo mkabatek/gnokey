@@ -1,0 +1,29 @@
+.generator {
+    
+    float: right;
+    margin-right: 10px;
+
+    div, .btn {
+        display: inline-block;
+    }    
+
+    input {
+        margin-left: 0;
+        padding: 2px;
+        width: 90px;
+    }
+
+    .btn.js-copy {
+        border: none;
+        padding: 6px 7px 5px;
+        margin-left: -28px;
+        width: 28px;
+        vertical-align: inherit;
+        position: relative;
+        z-index: 1;
+
+        img {
+            width: 100%;
+        }
+    }
+}
