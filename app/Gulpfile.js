@@ -96,7 +96,7 @@ gulp.task('uglify', ['browserify-src'], function() {
     .pipe(sourcemaps.init({loadMaps: true}))
     .pipe(rename('index.min.js'))
     .pipe(sourcemaps.write('./'))
-    .pipe(gulp.dest('public/app/js'));
+    .pipe(gulp.dest('../public/app/js'));
 });
 
 //
@@ -114,7 +114,7 @@ gulp.task('sass', function(){
       .pipe(rename('main.min.css'))
       .pipe(sourcemaps.write('./'))
       .pipe(gulp.dest('./build'))
-      .pipe(gulp.dest('./public/app/css'))
+      .pipe(gulp.dest('../public/app/css'))
 });
 
 //

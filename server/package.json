@@ -1,14 +1,16 @@
 {
-  "name": "SimplePass Server",
+  "name": "bombe-server",
   "version": "1.0.0",
   "description": "Simple storage of SimplePass customers.",
   "main": "index.js",
   "author": "Michael Roth<hi@michaelharrisonroth.com",
+  "scripts": {
+    "start": "node index.js"
+  },
   "dependencies": {
-    "body-parser": "^1.15.2",
-    "cors": "^2.8.1",
-    "express": "^4.14.0",
-    "letsencrypt-express": "^2.0.5",
+    "body-parser": "^1.19.0",
+    "cors": "^2.8.5",
+    "express": "^4.17.1",
     "mysql": "^2.12.0"
   }
 }

@@ -26,7 +26,8 @@ var app = {
     ajaxLoading : false,
     debug : true,
     gEndpoint : 'https://www.googleapis.com',
-    gClientId : '223894830497-alftc6jtum6urrr5i9jfbnsafahsjcts.apps.googleusercontent.com',
+    gClientId : '771539139723-rqai5ge4eutm4q04jh8po5do57b676pr.apps.googleusercontent.com',
+    // KCMTbWeRtNKELVFWrmXiPlXi
     gAccessToken : null,
     gUser : null,
     gScopes : [
@@ -52,6 +53,7 @@ var app = {
 
         // google api callback
         window.gapiCallback = function(data){
+            console.log(data)
             app.gapi = window.gapi;
             app.loading = true;
 
@@ -109,12 +111,12 @@ var app = {
                 gEmail = cookie.get('gEmail');
                 if(data.error === 'immediate_failed' && gEmail) {
                     // auth w/out immediate
-                    app.gapi.auth.authorize({
-                        client_id: app.gClientId,
-                        scope: app.gScopes,
-                        user_id: gEmail,
-                        authuser: -1
-                    }, window.gapiCallback);
+                    app.gapi.client.init({
+                        'apiKey': app.gClientSecret,
+                        'clientId': app.gClientId,
+                        'scope': app.gScopes
+                        // 'discoveryDocs': ['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest']
+                    }).then(window.gapiCallback)
                 } else {
                     app.loading = false;
                 }
@@ -124,25 +126,29 @@ var app = {
                     app.gAccessToken = data.access_token;
 
                     // Get user id
-                    $.getJSON(app.gEndpoint+'/oauth2/v3/userinfo?alt=json&access_token='+app.gAccessToken, function(res){
-                        // store email in cookie (for account switching)
-                        app.gUser = res.sub;
-                        cookie.set('gEmail', res.email);
-
-                        if(res.email) {
-                            $.post('https://simplepass.michaelharrisonroth.com:8673/signup', {
-                              email : res.email,
-                              first_name : res.given_name,
-                              last_name: res.family_name,
-                              gender: res.gender,
-                              google_sub: res.sub
-                            });
+                    $.ajax({
+                        dataType: "json",
+                        url: app.gEndpoint+'/oauth2/v3/userinfo?alt=json',
+                        headers: { Authorization: 'Bearer '+ app.gAccessToken },
+                        success: function(res){
+                            // store email in cookie (for account switching)
+                            app.gUser = res.sub;
+                            cookie.set('gEmail', res.email);
+    
+                            if(res.email) {
+                                // $.post('https://simplepass.michaelharrisonroth.com:8673/signup', {
+                                //   email : res.email,
+                                //   first_name : res.given_name,
+                                //   last_name: res.family_name,
+                                //   gender: res.gender,
+                                //   google_sub: res.sub
+                                // });
+                            }
+    
+                            // load drive api
+                            app.loadDriveApi();
                         }
-
-                        // load drive api
-                        app.loadDriveApi();
                     });
-
                 }
                 // load api callback
                 else {
@@ -157,6 +163,7 @@ var app = {
             gEmail = cookie.get('gEmail');
             if(gEmail) {
                 // auth
+                console.log(gEmail)
                 app.gapi.auth.authorize({
                     client_id: app.gClientId,
                     scope: app.gScopes,
@@ -246,9 +253,11 @@ var app = {
             if (res.id) {
 
                 // get file
-                $.ajax(res.downloadUrl, {
-                  headers: {Authorization: 'Bearer ' + app.gAccessToken},
+                console.log(res)
+                $.ajax(res.selfLink + '?alt=media', {
+                  headers: { Authorization: 'Bearer ' + app.gAccessToken },
                   success: function(data, status, request) {
+                      console.log(data)
                     // set salt / iv
                     // for encryption
                     if(!app.salt) {
@@ -262,7 +271,7 @@ var app = {
                     var title = res.title.replace('.json','');
                     app.locker.add(title, {
                         file : res.id,
-                        downloadUrl : res.downloadUrl,
+                        downloadUrl : res.selfLink + '?alt=media',
                         rows : data.rows,
                         salt : data.salt,
                         iv : data.iv
@@ -459,8 +468,14 @@ var app = {
             return false;
         }
 
-        var url = app.locker.data[app.locker.current].downloadUrl+'&access_token='+this.gAccessToken;
-        return window.open(url, '_blank');
+        var url = app.locker.data[app.locker.current].downloadUrl;
+        $.ajax(url, {
+            headers: { Authorization: 'Bearer ' + app.gAccessToken },
+            success: function(data, status, request) {
+                console.log(data)
+                // TODO https://github.com/eligrey/FileSaver.js
+            }
+        })
     },
 
     //

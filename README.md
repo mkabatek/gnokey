@@ -21,3 +21,7 @@ The entire app is client side and stores nothing on a server, but is able to tak
 
 * Tests are run using `gulp-mocha-phantomjs` & `chai` and can be run command line or in the browser.
 * All dependencies are loaded via Bower. Right now it is only Bootstrap (v4-alpha), jQuery & Crypto-JS.
+
+# Deployment
+
+Copy `/public` to s3 bucket.
