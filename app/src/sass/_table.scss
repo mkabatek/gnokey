@@ -4,8 +4,9 @@
     transition: all 0.5s ease;
 
     .controls {
+        border-bottom: 1px solid #efefef;
         display: block;
-        min-height: 42px;
+        min-height: 50px;
         margin: 0 4px;
 
         .dropdown {
@@ -28,17 +29,18 @@
 
         .cell {
             float: left;
-            padding: 0 10px;
+            padding: 0 6px;
             position: relative;
-            width: 24%;
+            width: calc(25% - 20px);
         }
     }
 
     /* menu buttons */
     .row > .cell:nth-child(5) {
-        width: 70px;
+        width: 80px;
         margin-top: 3px;
         padding: 0;
+        text-align: right;
 
         .btn {
             padding: .1rem .4rem 0rem .4rem;
@@ -105,15 +107,11 @@
         .row.child {
             border-left: 1px solid $brand-primary;
             float: right;
-            margin-right: -1%;
+            margin-right: -20px;
             width: 100%;
         }
-
-        .row.child > .cell:last-child {
-            width: 40px;
-        }
         .row.child > .cell:first-child {
-            width: 23%;
+            width: calc(25% - 40px);
         }
 
         input {
@@ -157,6 +155,7 @@
             .cell,
             .cell:nth-child(5) {
                 margin: 10px 0;
+                padding-right: 8px;
                 width: 100%;
             }
 
@@ -165,8 +164,8 @@
             }
 
             .menu {
-                left: auto;
-                right: -60px;
+                // left: auto;
+                // right: -60px;
 
                 .btn {
                     float: none;
@@ -181,7 +180,8 @@
 
         .tbody {
             .row.child {
-                width: 95%;
+                width: 97%;
+                margin-right: 0;
             }
 
             .row.child>.cell:last-child,

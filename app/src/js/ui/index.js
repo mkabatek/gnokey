@@ -32,7 +32,9 @@ module.exports = function(app) {
             $('.js-add-locker').removeClass('btn-success').addClass('btn-secondary');
 
             // save
-            $(window).trigger('app-save');
+            if (name) {
+                $(window).trigger('app-save');
+            }
         } else {
             $('.js-locker-name').addClass('active');
             $('.js-add-locker').removeClass('btn-secondary').addClass('btn-success');
@@ -51,9 +53,6 @@ module.exports = function(app) {
         
         // remove the current locker
         app.locker.remove();
-
-        // save
-        $(window).trigger('app-save');
     });
 
     // save

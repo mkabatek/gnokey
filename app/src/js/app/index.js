@@ -74,7 +74,6 @@ var app = {
 
         // listen to loading event
         $(window).on('app-save', function(e) {
-            console.log('saving...');
             app.save();
         });
 
@@ -111,7 +110,7 @@ var app = {
 
             if(data.error) {
                 if(app.debug) {
-                    console.log('gapi:','error', data.error);
+                    console.error('gapi:','error', data.error);
                 }
 
                 gEmail = cookie.get('gEmail');
@@ -169,7 +168,7 @@ var app = {
             gEmail = cookie.get('gEmail');
             if(gEmail) {
                 // auth
-                console.log(gEmail)
+                // console.log(gEmail)
                 app.gapi.auth.authorize({
                     client_id: app.gClientId,
                     scope: app.gScopes,
@@ -315,7 +314,7 @@ var app = {
                 $.ajax(res.selfLink + '?alt=media', {
                   headers: { Authorization: 'Bearer ' + app.gAccessToken },
                   success: function(data, status, request) {
-                      console.log(data)
+                    //   console.log(data)
                     // set salt / iv
                     // for encryption
                     if(!app.salt) {
@@ -530,7 +529,7 @@ var app = {
         $.ajax(url, {
             headers: { Authorization: 'Bearer ' + app.gAccessToken },
             success: function(data, status, request) {
-                console.log(data)
+                // console.log(data)
                 // TODO https://github.com/eligrey/FileSaver.js
             }
         })

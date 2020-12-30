@@ -83,10 +83,11 @@ Row.prototype.build = function(data) {
 
             // column
             var type = (key === 'password') ? 'password' : 'text';
-            var $td = $('<div class="cell input-group"><input type="'+type+'" name="'+key+'" value="'+data[key]+'" class="form-control" autocomplete="off" /></div>');
+            var $td = $('<div class="cell"><input type="'+type+'" name="'+key+'" value="'+data[key]+'" class="form-control" autocomplete="off" /></div>');
 
-            // copy to clipboard
+            // copy to clipboard inputs
             if($.inArray(key, ['username','email','password']) !== -1) {
+                $td = $('<div class="cell input-group"><input type="'+type+'" name="'+key+'" value="'+data[key]+'" class="form-control" autocomplete="off" /></div>');
                 $td.append('<span class="input-group-btn js-copy"><button class="btn btn-sm btn-secondary"><i class="ri-file-copy-line"></i></button></span>' );
             }
 
