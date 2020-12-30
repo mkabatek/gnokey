@@ -3,7 +3,7 @@ var CryptoJS = require('../../components/crypto-js');
 /**
  * Simple AES Encryption Helper
  *
- * @author Mike Roth <hi@michaelharrisonroth.com>
+ * @author Mike Roth <mike@manyuses.com>
  * @version 0.0.1
  */
 var crypto = {

@@ -20,10 +20,10 @@
 // // Components
 // @import "src/components/bootstrap/scss/animation";
 @import "src/components/bootstrap/scss/dropdown";
-// @import "src/components/bootstrap/scss/button-group";
-// @import "src/components/bootstrap/scss/input-group";
+@import "src/components/bootstrap/scss/button-group";
+@import "src/components/bootstrap/scss/input-group";
 // @import "src/components/bootstrap/scss/custom-forms";
-// @import "src/components/bootstrap/scss/nav";
+@import "src/components/bootstrap/scss/nav";
 @import "src/components/bootstrap/scss/navbar";
 // @import "src/components/bootstrap/scss/card";
 // @import "src/components/bootstrap/scss/breadcrumb";
@@ -40,7 +40,7 @@
 
 // // Components w/ JavaScript
 // @import "src/components/bootstrap/scss/modal";
-// @import "src/components/bootstrap/scss/tooltip";
+@import "src/components/bootstrap/scss/tooltip";
 // @import "src/components/bootstrap/scss/popover";
 // @import "src/components/bootstrap/scss/carousel";
 

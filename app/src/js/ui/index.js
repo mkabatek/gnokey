@@ -5,11 +5,18 @@ window.jQuery = $;
 
 // bootstrap dropdown
 require('../../components/bootstrap/dist/js/umd/dropdown.js');
+// bootstrap tooltip
+require('../../components/bootstrap/dist/js/umd/tooltip.js');
+// bootstrap modals
+require('../../components/bootstrap/dist/js/umd/modal.js');
 
 // 
 // ui
 ////////
 module.exports = function(app) {
+
+    // enable tooltips
+    $('[data-toggle="tooltip"]').tooltip();
     
     // add a locker
     $('body').on('click', '.js-add-locker', function(e){
@@ -17,14 +24,18 @@ module.exports = function(app) {
 
         if($('.js-locker-name').hasClass('active')) {
             var name = $('.js-locker-name').val();
-            app.locker.add(name);
+            var index = app.locker.add(name);
+            app.locker.change(index);
 
             $('.js-locker-name').val('');
             $('.js-locker-name').removeClass('active');
-            $('.js-add-locker').removeClass('btn-primary').addClass('btn-success');
+            $('.js-add-locker').removeClass('btn-success').addClass('btn-secondary');
+
+            // save
+            $(window).trigger('app-save');
         } else {
             $('.js-locker-name').addClass('active');
-            $('.js-add-locker').removeClass('btn-success').addClass('btn-primary');
+            $('.js-add-locker').removeClass('btn-secondary').addClass('btn-success');
         }
 
     });
@@ -40,6 +51,9 @@ module.exports = function(app) {
         
         // remove the current locker
         app.locker.remove();
+
+        // save
+        $(window).trigger('app-save');
     });
 
     // save
@@ -52,7 +66,7 @@ module.exports = function(app) {
             return false;
         }
 
-        app.save();
+        $(window).trigger('app-save');
     });
     
     // add a new empty row
@@ -64,7 +78,11 @@ module.exports = function(app) {
             return false;
         }
 
-        app.addRow({}, $('.table .tbody') );
+        // add a row
+        app.addRow({}, $('.table .tbody'), true );
+
+        // save
+        $(window).trigger('app-save');
     });
 
     // login
@@ -114,14 +132,14 @@ module.exports = function(app) {
         e.preventDefault();
 
         var password = app.generatePassword();
-        var $input = $('<input type="text" value="'+password+'">');
+        var $input = $('<input type="text" class="form-control" value="'+password+'">');
         $(this).before($input);
         $input.select();
         document.execCommand('copy');
 
         setTimeout(function(){
             $input.remove();
-        }, 700);
+        }, 1000);
         
     });
 };

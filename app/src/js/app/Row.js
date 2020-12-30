@@ -6,7 +6,7 @@ var Input = require('./Input');
 //
 // Simple row class
 /////////////////////
-var Row = function(params) {
+var Row = function(params, prepend) {
     // setup data
     var defaults = {
         'service' : '',
@@ -27,7 +27,12 @@ var Row = function(params) {
 
     // ---- setup dom ---- //
     // append row
-    this.$container.append(this.$el);
+    if (prepend) {
+        this.$container.prepend(this.$el);
+    } else {
+        this.$container.append(this.$el);
+    }
+    
 
     // add data
     this.build(data);
@@ -38,10 +43,10 @@ var Row = function(params) {
     self.$el.find('.js-copy').click(self.onCopy);
 
     // open/close menu
-    self.$el.find('.js-menu').click(function(e) {
-        e.preventDefault();
-        $(this).prev('.menu').toggleClass('active');
-    });
+    //self.$el.find('.js-menu').click(function(e) {
+    //    e.preventDefault();
+    //    $(this).prev('.menu').toggleClass('active');
+    //});
 
     // destroy
     self.$el.find('.js-destroy:first').click(function(e) {
@@ -78,28 +83,26 @@ Row.prototype.build = function(data) {
 
             // column
             var type = (key === 'password') ? 'password' : 'text';
-            var $td = $('<div class="cell"><input type="'+type+'" name="'+key+'" value="'+data[key]+'" /></div>');
+            var $td = $('<div class="cell input-group"><input type="'+type+'" name="'+key+'" value="'+data[key]+'" class="form-control" autocomplete="off" /></div>');
 
             // copy to clipboard
             if($.inArray(key, ['username','email','password']) !== -1) {
-                $td.append('<button class="js-copy btn btn-sm btn-warning"><img src="img/clipboard.png" /></button> ' );
+                $td.append('<span class="input-group-btn js-copy"><button class="btn btn-sm btn-secondary"><i class="ri-file-copy-line"></i></button></span>' );
             }
 
             this.$el.append($td);
-            this.inputs.push(new Input($td.find('input').get(0), data[key]));
+            this.inputs.push(new Input(key, $td.find('input').get(0), data[key]));
         }
     }
 
     // add row menu
     var $menu = $('<div class="cell" />');
     if(this.parent) {
-        $menu.append('<button class="js-destroy btn btn-sm btn-danger">x</a>');
+        $menu.append('<button class="js-destroy btn btn-secondary"><i class="ri-close-line"></i></a>');
     } else {
-        $menu.append('<div class="menu" />');
-        $menu.find('.menu').append('<button class="js-add-child btn btn-sm btn-success">&dtrif;</a>');
-        $menu.find('.menu').append('<button class="js-destroy btn btn-sm btn-danger">x</a>');
-        $menu.append('<button class="js-menu btn btn-sm btn-primary" />');
-        $menu.find('.js-menu').append('<img src="img/grid.png" />');
+        $menu.append('<div class="menu btn-group" />');
+        $menu.find('.menu').append('<button class="js-add-child btn btn-secondary"><i class="ri-add-box-line"></i></a>');
+        $menu.find('.menu').append('<button class="js-destroy btn btn-secondary"><i class="ri-close-line"></i></a>');
     }
     this.$el.append($menu);
 
@@ -119,12 +122,12 @@ Row.prototype.onCopy = function(e){
 
     var $input = $(this).prev('input');
     if($input.attr('type') === 'password') {
-        $input.after('<input style="position:absolute;right:0;width:97%;" type="text" value="'+$input.val()+'" />');
+        $input.after('<input style="position:absolute;left:10px;width:85.4%;z-index:2;" class="form-control" type="text" value="'+$input.val()+'" />');
         $input.next('input').select();
         document.execCommand('copy');
         setTimeout(function(){
             $input.next('input').remove();
-        }, 700);
+        }, 1000);
     } else {
         $input.select();
         document.execCommand('copy');

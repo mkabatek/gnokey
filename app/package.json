@@ -34,5 +34,8 @@
     "type": "git",
     "url": ""
   },
-  "author": "Michael Roth <hi@michaelharrisonroth.com>"
+  "author": "Mike Roth <mike@manyuses.com>",
+  "volta": {
+    "node": "8.17.0"
+  }
 }

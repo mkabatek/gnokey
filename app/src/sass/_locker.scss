@@ -1,7 +1,8 @@
 .dropdown {
 
     .dropdown-menu {
-
+        left: 0;
+        
         li {
             padding: 3px;
 
@@ -27,18 +28,17 @@
         display: none;
     }
 
-    .js-add-locker.btn-success > span:first-child {
+    .js-add-locker.btn-secondary > span:first-child {
         display: block;
     }
 
-    .js-add-locker.btn-primary > span:last-child {
+    .js-add-locker.btn-success > span:last-child {
         display: block;
     }
 
     input {
         display: inline-block;
         opacity: 0;
-        padding: 3px;
         transition: all 0.3s ease;
         width: 0;
     }

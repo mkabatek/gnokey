@@ -75,6 +75,9 @@ Locker.prototype.add = function(name, data) {
     };
     this.$el.find('.dropdown-menu').append('<li><a href="#" data-locker="'+name+'">'+name+'</a></li>');
     $(window).trigger('app-locker-add', [name]);
+
+    // return index
+    return ($('[data-locker]').length - 1)
 };
 
 //

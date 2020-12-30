@@ -6,13 +6,14 @@
     <head>
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <title>SimplePass</title>
-        <meta name="description" content="A simple password manager that stores and encrypts your passwords in Google Drive&#8482;">
+        <title>BombePass</title>
+        <meta name="description" content="A simple password manager that stores and encrypts your passwords in Google Drive.">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <link rel="shortcut icon" href="img/favicon.ico" type="image/x-icon">
         <link rel="icon" href="img/favicon.ico" type="image/x-icon">
+        <link href="https://cdn.jsdelivr.net/npm/remixicon@2.5.0/fonts/remixicon.css" rel="stylesheet">
         <link rel="stylesheet" href="css/main.min.css">
-        <link rel="canonical" href="https://michaelharrisonroth.github.io/simplepass/app" />
+        <link rel="canonical" href="https://bombepass.com/app" />
         <!-- <script>
             if (!(window.location.host.startsWith("local")) && (window.location.protocol != "https:")) {
                 window.location.protocol = "https";
@@ -24,47 +25,60 @@
             <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/?locale=en">upgrade your browser</a> to improve your experience.</p>
         <![endif]-->
 
-        <img class="webstore" src="img/chrome-webstore.png" />
-
         <nav class="navbar navbar-default navbar-fixed-top">
             <div class="navbar-header">
               <a class="navbar-brand" href="#">
-                <img src="img/logo.png" /> <span>SimplePass</span>
+                <img src="img/logo.png" />
               </a>
             </div>
-
-            <input type="text" class="js-filter filter" placeholder="search" />
 
             <div class="loader">
                 <img src="img/loader.gif" />
             </div>
 
             <div class="navbar-collapse">
-                <button class="js-new-row new btn btn-sm btn-success">+</button>
-                <button class="js-save save btn btn-sm btn-primary">&check;</button>
-                <button class="js-download download btn btn-sm btn-warning">download</button>
-                <button class="js-logout logout btn btn-sm btn-danger">logout</button>
-                <div class="generator">
-                    <button class="js-generate btn btn-sm btn-primary">?</button>
+                <!-- <button class="js-save save btn btn-sm btn-primary">&check;</button> -->
+                <button class="js-logout logout btn btn-sm btn-secondary" data-toggle="tooltip" data-placement="bottom" title="Logout">
+                    <i class="ri-logout-box-r-line"></i>
+                </button>
+                <div class="generator" data-toggle="tooltip" data-placement="bottom" title="Generate password">
+                    <button class="js-generate btn btn-sm btn-secondary">
+                        <i class="ri-rotate-lock-fill"></i>
+                    </button>
                 </div>
             </div>
+
+            <form class="form-inline">
+                <input type="text" class="js-filter filter form-control" placeholder="search" />
+            </form>
         </nav>
         
         <div class="container-fluid">
 
           <div class="table">
-            
-            <div class="dropdown js-lockers">
-              <button class="btn btn-sm btn-default dropdown-toggle" type="button" id="lockers" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
-                Lockers
-                <span class="caret"></span>
-              </button>
-              <ul class="dropdown-menu" aria-labelledby="lockers">
-                
-              </ul>
-              <button class="btn btn-sm btn-danger js-remove-locker">x</button>
-              <button class="btn btn-sm btn-success js-add-locker"><span>+</span><span>&check;</span></button>
-              <input class="js-locker-name" type="text" placeholder="Locker Name" />
+            <div class="controls">
+                <button class="js-new-row new btn btn-sm btn-primary" data-toggle="tooltip" data-placement="left" title="Add Password">
+                    <i class="ri-add-line"></i>
+                </button>
+
+                <div class="dropdown js-lockers">
+                    <button class="btn btn-secondary dropdown-toggle" type="button" id="lockers" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+                        Groups
+                        <span class="caret"></span>
+                    </button>
+                    <ul class="dropdown-menu" aria-labelledby="lockers"></ul>
+                    <button class="js-download download btn btn-sm btn-secondary" data-toggle="tooltip" data-placement="bottom" title="Download Passwords">
+                        <i class="ri-file-download-line"></i>
+                    </button>
+                    <button class="btn btn-sm btn-secondary js-remove-locker" data-toggle="tooltip" data-placement="bottom" title="Delete Group">
+                        <i class="ri-close-line"></i>
+                    </button>
+                    <button class="btn btn-sm btn-secondary js-add-locker" data-toggle="tooltip" data-placement="bottom" title="Add Group">
+                        <span><i class="ri-add-line"></i></span>
+                        <span><i class="ri-check-line"></i></span>
+                    </button>
+                    <input class="js-locker-name form-control" type="text" placeholder="Group name" />
+                </div>
             </div>
             
             <div class="row thead">
@@ -84,13 +98,34 @@
 
         <div class="load-overlay">
             <button class="js-login btn btn-danger">
-                <img src="img/logo-drive.png"> Connect to Google Drive
+                <img src="img/logo-drive.png"> Login with Google Drive
             </button>
         </div>
 
+        <!-- <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
+                  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                  </button>
+                </div>
+                <div class="modal-body">
+                  ...
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                  <button type="button" class="btn btn-primary">Save changes</button>
+                </div>
+              </div>
+            </div>
+          </div> -->
+
+        <!-- tether -->
+        <script src="https://npmcdn.com/tether@1.2.4/dist/js/tether.min.js"></script>
         <!-- load app -->
         <script type="text/javascript" src="js/index.min.js"></script>
-
         <!-- load google apis -->
         <script src="https://apis.google.com/js/client.js?onload=gapiCallback"></script>
     </body>

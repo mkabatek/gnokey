@@ -1,11 +1,18 @@
 body {
     background-color: #fcfcfc;
 
-    img.webstore {
-        position: fixed;
-        bottom: 0;
-        right: 0;
-        width: 150px
+    input:focus {
+        outline: none !important;
+        border: 1px solid $brand-primary !important;
+    }
+
+    .btn {
+        &:focus {
+            outline: none !important;
+        }
+        i {
+            font-size: 1.2rem;
+        }
     }
 
 }

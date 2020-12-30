@@ -12,18 +12,18 @@ var crypto = require('../plugins/crypto');
 var cookie = require('../plugins/cookie');
 
 //
-// SimplePass
-//  - Simple mini google drive based password manager
+// 
+//  Google drive based password manager
 //
-// @author Mike Roth <hi@michaelharrisonroth.com>
-// @version 0.0.4
+// @author Mike Roth <mike@manyuses.com>
+// @version 0.0.5
 //
 ///////////////////
 var app = {
 
     // instance vars
     loading : true,
-    ajaxLoading : false,
+    ajaxLoading : false,    
     debug : true,
     gEndpoint : 'https://www.googleapis.com',
     gClientId : '771539139723-rqai5ge4eutm4q04jh8po5do57b676pr.apps.googleusercontent.com',
@@ -33,6 +33,7 @@ var app = {
     gScopes : [
         'https://www.googleapis.com/auth/drive.install',
         'https://www.googleapis.com/auth/drive.appdata',
+        'https://www.googleapis.com/auth/drive.file',
         'https://www.googleapis.com/auth/userinfo.email'
     ],
     rows : [],
@@ -53,7 +54,6 @@ var app = {
 
         // google api callback
         window.gapiCallback = function(data){
-            console.log(data)
             app.gapi = window.gapi;
             app.loading = true;
 
@@ -71,6 +71,12 @@ var app = {
                 $('body').removeClass('loading');
             }
         }, 100);
+
+        // listen to loading event
+        $(window).on('app-save', function(e) {
+            console.log('saving...');
+            app.save();
+        });
 
         // on row destroy (Triggered by Row object)
         $(window).on('app-row-destroy', function(e, index, row) {
@@ -187,6 +193,45 @@ var app = {
         app.gapi.client.load('drive', 'v2', window.gapiCallback);
     },
 
+    createAppFile: function() {
+        const boundary = '-------314159265358979323846264';
+        const delimiter = "\r\n--" + boundary + "\r\n";
+        const close_delim = "\r\n--" + boundary + "--";
+        var appState = {
+          number: 'hello',
+          text: 'world'
+        };
+        var fileName = 'passwords.bombe';
+        var contentType = 'application/bombe'
+        var metadata = {
+          'title': fileName,
+          'mimeType': contentType
+        };
+        var base64Data = btoa(JSON.stringify(appState));
+        var multipartRequestBody =
+            delimiter +
+            'Content-Type: application/json\r\n\r\n' +
+            JSON.stringify(metadata) +
+            delimiter +
+            'Content-Type: ' + contentType + '\r\n' +
+            'Content-Transfer-Encoding: base64\r\n' +
+            '\r\n' +
+            base64Data +
+            close_delim;
+        var request = app.gapi.client.request({
+            'path': '/upload/drive/v2/files',
+            'method': 'POST',
+            'params': {'uploadType': 'multipart'},
+            'headers': {
+              'Content-Type': 'multipart/mixed; boundary="' + boundary + '"'
+            },
+            'body': multipartRequestBody});
+
+        request.execute(function(result) {
+            console.log(result)
+        })
+    },
+
 
     //
     // Populate App data
@@ -195,6 +240,20 @@ var app = {
 
         // setup data
         app.locker = new Locker('.js-lockers');
+
+        // app.createAppFile()
+        
+        // get or create app shortcut
+        // const creq = app.gapi.client.drive.files.insert({
+        //     resource: {
+        //         'title': 'Bombe Passwords',
+        //         'mimeType': 'application/vnd.google-apps.drive-sdk'
+        //     },
+        //     fields: 'id'
+        //   })
+        //   creq.execute(function(resp) {
+        //       console.log(resp)
+        //   })
 
         // get appdata file
         var request = app.gapi.client.drive.files.list({
@@ -253,7 +312,6 @@ var app = {
             if (res.id) {
 
                 // get file
-                console.log(res)
                 $.ajax(res.selfLink + '?alt=media', {
                   headers: { Authorization: 'Bearer ' + app.gAccessToken },
                   success: function(data, status, request) {
@@ -376,7 +434,7 @@ var app = {
     //
     // Add a new row
     //////////////////
-    addRow : function(data, container) {
+    addRow : function(data, container, prepend) {
         var d = data || {};
 
         // decrypt password
@@ -398,7 +456,7 @@ var app = {
             data: d,
             index: app.rows.length,
             container: container
-        }));
+        }, prepend));
 
         return true;
     },

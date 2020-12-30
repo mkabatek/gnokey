@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Simple storage of SimplePass customers.",
   "main": "index.js",
-  "author": "Michael Roth<hi@michaelharrisonroth.com",
+  "author": "Mike Roth<mike@manyuses.com",
   "scripts": {
     "start": "node index.js"
   },

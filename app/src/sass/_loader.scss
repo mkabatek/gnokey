@@ -4,9 +4,9 @@
     position: absolute;
     left: 50%;
     top: -50px;
-    margin-left: -15px;
-    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.320, 1.275);
-    width: 20px;
+    margin-left: -20px;
+    transition: all .4s cubic-bezier(.175,.885,.32,1.275);
+    width: 40px;
 
     img {
         width: 100%;
@@ -40,7 +40,7 @@ body.loading {
 
     .loader {
         opacity: 1;
-        top: 10px;
+        top: 14px;
     }
 
     .load-overlay {
