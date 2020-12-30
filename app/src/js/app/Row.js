@@ -169,9 +169,9 @@ Row.prototype.destroy = function() {
 Row.prototype.addChild = function(data) {
     var d = data || {};
 
-    // TODO custom inputs names?
     this.children.push(new Row({
         data : d,
+        index: this.children.length,
         container : $(this.$el),
         parent : this
     }));
