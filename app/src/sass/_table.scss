@@ -7,7 +7,6 @@
         border-bottom: 1px solid #efefef;
         display: block;
         min-height: 50px;
-        margin: 0 4px;
 
         .dropdown {
             float: left;
@@ -49,6 +48,10 @@
 
     .thead {
         .cell {
+            font-weight: 600;
+            letter-spacing: 0.2rem;
+            text-transform: uppercase;
+            font-size: 0.75rem;
             padding-top: 5px;
         }
 

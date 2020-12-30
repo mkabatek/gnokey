@@ -77,17 +77,13 @@ Locker.prototype.add = function(name, data) {
     $(window).trigger('app-locker-add', [name]);
 
     // return index
-    return ($('[data-locker]').length - 1)
+    return ($('[data-locker]').length - 1);
 };
 
 //
 // remove a locker
 ////////////////////
 Locker.prototype.remove = function() {
-    if(!confirm('Are you sure? You may want to download a backup first.')) {
-        return;
-    }
-
     var $locker = this.$el.find('[data-locker].active');
     this.$el.find('.dropdown-toggle').text('Lockers');
     $locker.parent('li').remove();

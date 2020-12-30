@@ -48,20 +48,10 @@ body.loading {
             opacity: 0;
         }
     }
-    
 }
 
 body.loaded {
     .load-overlay {
         display: none;
     }
-}
-
-@media(max-width: 768px) {
-
-    .loader {
-        left: auto;
-        right: 15px;
-    }
-
 }

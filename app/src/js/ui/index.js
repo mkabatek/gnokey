@@ -16,8 +16,18 @@ require('../../components/bootstrap/dist/js/umd/modal.js');
 module.exports = function(app) {
 
     // enable tooltips
-    $('[data-toggle="tooltip"]').tooltip();
+    $('[data-toggle="tooltip"]').tooltip({
+        trigger: 'hover'
+    });
     
+    // modal
+    $('#confirm-modal').on('show.bs.modal', function (ev) {
+        var button = $(ev.relatedTarget);
+        var title = button.data('title');
+        var modal = $(this);
+        modal.find('.modal-title').text(title);
+      })
+
     // add a locker
     $('body').on('click', '.js-add-locker', function(e){
         e.preventDefault();
@@ -42,17 +52,28 @@ module.exports = function(app) {
 
     });
 
-    // remove a locker
-    $('body').on('click', '.js-remove-locker', function(e){
+    // remove the current locker
+    $('body').on('click', '[data-delete="locker"]', function(e){
+        $('#confirm-modal').modal('hide');
+        app.locker.remove();
+    });
+
+    // remove locker modal
+    $('body').on('click', '.js-remove-locker-confirm', function(e){
         e.preventDefault();
 
+        // no locker
         if(!app.locker.current) {
             alert('choose a locker first');
             return false;
         }
-        
-        // remove the current locker
-        app.locker.remove();
+
+        // show confirm
+        var modal = $('#confirm-modal');
+        modal.find('.modal-title').text('Delete "' + app.locker.current + '" Group');
+        modal.find('.modal-body').text('Are you sure you want to delete "' + app.locker.current + '"? This will delete all passwords and cannot be undone!');
+        modal.find('.modal-confirm').attr('data-delete', 'locker');
+        modal.modal('show');
     });
 
     // save

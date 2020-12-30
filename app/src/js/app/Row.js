@@ -32,7 +32,6 @@ var Row = function(params, prepend) {
     } else {
         this.$container.append(this.$el);
     }
-    
 
     // add data
     this.build(data);
@@ -41,12 +40,6 @@ var Row = function(params, prepend) {
     // copy to clipboard
     var self = this;
     self.$el.find('.js-copy').click(self.onCopy);
-
-    // open/close menu
-    //self.$el.find('.js-menu').click(function(e) {
-    //    e.preventDefault();
-    //    $(this).prev('.menu').toggleClass('active');
-    //});
 
     // destroy
     self.$el.find('.js-destroy:first').click(function(e) {
@@ -99,11 +92,11 @@ Row.prototype.build = function(data) {
     // add row menu
     var $menu = $('<div class="cell" />');
     if(this.parent) {
-        $menu.append('<button class="js-destroy btn btn-secondary"><i class="ri-close-line"></i></a>');
+        $menu.append('<button class="js-destroy btn btn-secondary"><i class="ri-delete-bin-line"></i></a>');
     } else {
         $menu.append('<div class="menu btn-group" />');
-        $menu.find('.menu').append('<button class="js-add-child btn btn-secondary"><i class="ri-add-box-line"></i></a>');
-        $menu.find('.menu').append('<button class="js-destroy btn btn-secondary"><i class="ri-close-line"></i></a>');
+        $menu.find('.menu').append('<button class="js-add-child btn btn-secondary"><i class="ri-arrow-down-s-line"></i></a>');
+        $menu.find('.menu').append('<button class="js-destroy btn btn-secondary"><i class="ri-delete-bin-line"></i></a>');
     }
     this.$el.append($menu);
 
@@ -123,7 +116,7 @@ Row.prototype.onCopy = function(e){
 
     var $input = $(this).prev('input');
     if($input.attr('type') === 'password') {
-        $input.after('<input style="position:absolute;left:10px;width:85.4%;z-index:2;" class="form-control" type="text" value="'+$input.val()+'" />');
+        $input.after('<input style="position:absolute;left:6px;width:86%;z-index:2;" class="form-control" type="text" value="'+$input.val()+'" />');
         $input.next('input').select();
         document.execCommand('copy');
         setTimeout(function(){
