@@ -47,6 +47,8 @@
     }
 
     .thead {
+        display: none;
+        
         .cell {
             font-weight: 600;
             letter-spacing: 0.2rem;
@@ -138,8 +140,13 @@
 
 }
 
+/* body class conditionals */
 .loaded .table {
     opacity: 1;
+}
+
+.group-selected .thead {
+    display: block;
 }
 
 /* mobile */

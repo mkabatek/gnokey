@@ -6,6 +6,14 @@ body {
         border: 1px solid $brand-primary !important;
     }
 
+    .modal-dialog {
+        margin: 100px auto;
+    }
+
+    .modal-title {
+        float: left;
+    }
+
     .btn {
         &:focus {
             outline: none !important;
@@ -13,6 +21,25 @@ body {
         i {
             font-size: 1.2rem;
         }
+    }
+
+    /* --- select group message --- */
+    .select-group-message {
+        display: none;
+        
+        .card {
+            margin: 0 auto;
+            text-align: center;
+            width: 25rem;
+        }
+    }
+
+    &.loaded .select-group-message {
+        display: block;
+    }
+
+    &.group-selected .select-group-message {
+        display: none;
     }
 
 }

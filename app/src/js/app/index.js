@@ -69,6 +69,11 @@ var app = {
             } else {
                 $('body').removeClass('loading');
             }
+            if (app.locker.current) {
+                $('body').addClass('group-selected');
+            } else {
+                $('body').removeClass('group-selected');
+            }
         }, 100);
 
         // listen to loading event
@@ -502,7 +507,7 @@ var app = {
 
         // de-auth
         app.gapi.auth.signOut();
-        $('body').removeClass('loaded');
+        $('body').removeClass('loaded group-selected');
         app.loading = false;
         return true;
     },

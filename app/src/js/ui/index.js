@@ -19,14 +19,6 @@ module.exports = function(app) {
     $('[data-toggle="tooltip"]').tooltip({
         trigger: 'hover'
     });
-    
-    // modal
-    $('body').on('show.bs.modal', '#confirm-modal', function (ev) {
-        var button = $(ev.relatedTarget);
-        var title = button.data('title');
-        var modal = $(this);
-        modal.find('.modal-title').text(title);
-      })
 
     // add a locker
     $('body').on('click', '.js-add-locker', function(e){
@@ -52,28 +44,30 @@ module.exports = function(app) {
 
     });
 
-    // remove the current locker
-    $('body').on('click', '[data-delete="locker"]', function(e){
-        $('#confirm-modal').modal('hide');
-        app.locker.remove();
-    });
-
     // remove locker modal
     $('body').on('click', '.js-remove-locker-confirm', function(e){
         e.preventDefault();
 
         // no locker
         if(!app.locker.current) {
-            alert('choose a locker first');
+            bootbox.alert({
+                message: '<i class="ri-alert-line"></i> Select or create a password group first.',
+                size: 'small'
+            });
             return false;
         }
 
         // show confirm
-        var modal = $('#confirm-modal');
-        modal.find('.modal-title').text('Delete "' + app.locker.current + '" Group');
-        modal.find('.modal-body').text('Are you sure you want to delete "' + app.locker.current + '"? This will delete all passwords and cannot be undone!');
-        modal.find('.modal-confirm').attr('data-delete', 'locker');
-        modal.modal('show');
+        bootbox.confirm({
+            title: 'Delete "' + app.locker.current + '"',
+            size: 'small',
+            message: 'Are you sure you want to delete "' + app.locker.current + '"?<br><br><small>This will delete all of the passwords in this group and cannot be undone!</small>',
+            callback: function(confirmed) {
+                if (confirmed) {
+                    app.locker.remove();
+                }
+            }
+        });
     });
 
     // save
@@ -82,7 +76,10 @@ module.exports = function(app) {
         // save the current locker
 
         if(!app.locker.current) {
-            alert('choose a locker first');
+            bootbox.alert({
+                message: '<i class="ri-alert-line"></i> Select or create a password group first.',
+                size: 'small'
+            });
             return false;
         }
 
@@ -94,7 +91,10 @@ module.exports = function(app) {
         e.preventDefault();
 
         if(!app.locker.current) {
-            alert('choose a locker first');
+            bootbox.alert({
+                message: '<i class="ri-alert-line"></i> Select or create a password group first.',
+                size: 'small'
+            });
             return false;
         }
 
@@ -124,7 +124,10 @@ module.exports = function(app) {
         e.preventDefault();
 
         if(!app.locker.current) {
-            alert('choose a locker first');
+            bootbox.alert({
+                message: '<i class="ri-alert-line"></i> Select or create a password group first.',
+                size: 'small'
+            });
             return false;
         }
 

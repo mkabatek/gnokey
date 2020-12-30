@@ -30,7 +30,7 @@ var Locker = function(el, data){
     });
 
     if(!Object.keys(self.data).length) {
-        self.$el.find('.dropdown-menu').append('<li> -- no password lockers -- </li>');
+        self.$el.find('.dropdown-menu').append('<li> -- no password groups -- </li>');
     }
     
     // init dropdown
@@ -85,7 +85,7 @@ Locker.prototype.add = function(name, data) {
 ////////////////////
 Locker.prototype.remove = function() {
     var $locker = this.$el.find('[data-locker].active');
-    this.$el.find('.dropdown-toggle').text('Lockers');
+    this.$el.find('.dropdown-toggle').text('Select Group');
     $locker.parent('li').remove();
     $(window).trigger('app-locker-remove', [this.data[$locker.data('locker')]]);
     
@@ -124,7 +124,7 @@ Locker.prototype.change = function(index) {
 Locker.prototype.destroy = function() {
     this.$el.find('.dropdown-menu').html('');
     this.$el.find('.dropdown-menu').off('click.bs.dropdown');
-    this.$el.find('.dropdown-toggle').text('Lockers');
+    this.$el.find('.dropdown-toggle').text('Select Group');
 };
 
 module.exports = Locker;

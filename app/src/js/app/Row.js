@@ -134,24 +134,33 @@ Row.prototype.onCopy = function(e){
 Row.prototype.destroy = function() {
     var self = this;
 
-    // TODO custom dialog
-    if(!confirm('Are you sure?')) {
-        return;
-    }
-    
-    // remove from data arrays
-    var index = self.$el.index();
-    if(self.parent) {
-        index = self.parent.$el.children('.child').index(self.$el);
-        // remove self from parent children array
-        self.parent.children.splice(index, 1);
-    } else {
-        // trigger removed event
-        $(window).trigger('app-row-destroy', [index, self]);
-    }
+    // show confirm
+    var subMssg = this.children.length 
+        ? '<br><br><small>This will also delete all of this passwords sub-passwords and cannot be undone!</small>' 
+        : '<br><br><small>This cannot be undone!</small>';
 
-    // remove from dom
-    self.$el.remove();
+    bootbox.confirm({
+        title: 'Delete Password',
+        size: 'small',
+        message: 'Are you sure you want to delete this password?' + subMssg,
+        callback: function(confirmed) {
+            // remove if confirmed
+            if (confirmed) {
+                // remove from data arrays
+                var index = self.$el.index();
+                if(self.parent) {
+                    index = self.parent.$el.children('.child').index(self.$el);
+                    // remove self from parent children array
+                    self.parent.children.splice(index, 1);
+                } else {
+                    // trigger removed event
+                    $(window).trigger('app-row-destroy', [index, self]);
+                }
+                // remove from dom
+                self.$el.remove();
+            }
+        }
+    });
 };
 
 //
