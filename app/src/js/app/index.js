@@ -12,7 +12,6 @@ var crypto = require('../plugins/crypto');
 var cookie = require('../plugins/cookie');
 
 //
-// 
 //  Google drive based password manager
 //
 // @author Mike Roth <mike@manyuses.com>
@@ -141,6 +140,7 @@ var app = {
                             cookie.set('gEmail', res.email);
     
                             if(res.email) {
+                                // TODO send to sendgrid
                                 // $.post('https://simplepass.michaelharrisonroth.com:8673/signup', {
                                 //   email : res.email,
                                 //   first_name : res.given_name,
@@ -193,9 +193,9 @@ var app = {
     },
 
     createAppFile: function() {
-        const boundary = '-------314159265358979323846264';
-        const delimiter = "\r\n--" + boundary + "\r\n";
-        const close_delim = "\r\n--" + boundary + "--";
+        var boundary = '-------314159265358979323846264';
+        var delimiter = "\r\n--" + boundary + "\r\n";
+        var close_delim = "\r\n--" + boundary + "--";
         var appState = {
           number: 'hello',
           text: 'world'
@@ -240,19 +240,9 @@ var app = {
         // setup data
         app.locker = new Locker('.js-lockers');
 
+        // TODO load locker file
+        // based on query ID or default (in app data)
         // app.createAppFile()
-        
-        // get or create app shortcut
-        // const creq = app.gapi.client.drive.files.insert({
-        //     resource: {
-        //         'title': 'Bombe Passwords',
-        //         'mimeType': 'application/vnd.google-apps.drive-sdk'
-        //     },
-        //     fields: 'id'
-        //   })
-        //   creq.execute(function(resp) {
-        //       console.log(resp)
-        //   })
 
         // get appdata file
         var request = app.gapi.client.drive.files.list({
@@ -518,21 +508,24 @@ var app = {
     },
 
     //
-    // Download an encrypted backup
+    // Download an unencrypted backup
     /////////////////////////////////
     download : function() {
-        if(!app.locker.data[app.locker.current].downloadUrl) {
+        if(!app.locker.current) {
             return false;
         }
 
-        var url = app.locker.data[app.locker.current].downloadUrl;
-        $.ajax(url, {
-            headers: { Authorization: 'Bearer ' + app.gAccessToken },
-            success: function(data, status, request) {
-                // console.log(data)
-                // TODO https://github.com/eligrey/FileSaver.js
-            }
-        })
+        var csvContent = encodeURI("data:text/csv;charset=utf-8,");
+        csvContent += "Row,Service,Email,Username,Password" + encodeURI("\r\n");
+        app.rows.forEach(function(row) {
+            csvContent += row.toCSV()
+        });
+        var link = document.createElement("a");
+        link.setAttribute("href", csvContent);
+        link.setAttribute("download", app.locker.current+"-bombe.csv");
+        document.body.appendChild(link); // Required for FF
+        link.click();
+        link.remove();
     },
 
     //

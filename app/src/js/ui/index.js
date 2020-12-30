@@ -21,7 +21,7 @@ module.exports = function(app) {
     });
     
     // modal
-    $('#confirm-modal').on('show.bs.modal', function (ev) {
+    $('body').on('show.bs.modal', '#confirm-modal', function (ev) {
         var button = $(ev.relatedTarget);
         var title = button.data('title');
         var modal = $(this);

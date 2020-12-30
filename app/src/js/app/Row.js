@@ -191,4 +191,24 @@ Row.prototype.getData = function() {
     return data;
 };
 
+//
+// Get encoded string for CSV output
+////////////////////////////////////////
+Row.prototype.toCSV = function(parent) {
+    var index = parent ? parent + '.' + (this.index + 1) : (this.index + 1);
+
+    var str = index + ","
+    str += this.inputs.map(function(i){
+        return encodeURIComponent(i.data)
+    }).join(",") + encodeURI("\r\n");
+
+    if (this.children) {
+        this.children.forEach(function(c) {
+            str += c.toCSV(index);
+        });
+    }
+
+    return str;
+}
+
 module.exports = Row;
