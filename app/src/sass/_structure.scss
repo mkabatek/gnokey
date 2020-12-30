@@ -21,6 +21,10 @@ body {
         i {
             font-size: 1.2rem;
         }
+
+        &.new {
+            display: none !important;
+        }
     }
 
     /* --- select group message --- */
@@ -38,8 +42,13 @@ body {
         display: block;
     }
 
-    &.group-selected .select-group-message {
-        display: none;
+    &.group-selected {
+        .select-group-message {
+            display: none;
+        }
+        .btn.new {
+            display: block !important;
+        }
     }
 
 }

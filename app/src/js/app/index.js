@@ -69,7 +69,7 @@ var app = {
             } else {
                 $('body').removeClass('loading');
             }
-            if (app.locker.current) {
+            if (app.locker && app.locker.current) {
                 $('body').addClass('group-selected');
             } else {
                 $('body').removeClass('group-selected');

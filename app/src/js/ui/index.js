@@ -24,24 +24,18 @@ module.exports = function(app) {
     $('body').on('click', '.js-add-locker', function(e){
         e.preventDefault();
 
-        if($('.js-locker-name').hasClass('active')) {
-            var name = $('.js-locker-name').val();
-            var index = app.locker.add(name);
-            app.locker.change(index);
-
-            $('.js-locker-name').val('');
-            $('.js-locker-name').removeClass('active');
-            $('.js-add-locker').removeClass('btn-success').addClass('btn-secondary');
-
-            // save
-            if (name) {
-                $(window).trigger('app-save');
+        bootbox.prompt({ 
+            size: 'small',
+            title: 'Add Password Group',
+            placeholder: 'Group name',
+            callback: function(name){ 
+                if (name) {
+                    var index = app.locker.add(name);
+                    app.locker.change(index);
+                    $(window).trigger('app-save');
+                }
             }
-        } else {
-            $('.js-locker-name').addClass('active');
-            $('.js-add-locker').removeClass('btn-secondary').addClass('btn-success');
-        }
-
+        });
     });
 
     // remove locker modal
