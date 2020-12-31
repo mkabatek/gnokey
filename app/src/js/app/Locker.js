@@ -70,7 +70,6 @@ Locker.prototype.add = function(name, data) {
     // added with data
     this.data[name] = data || {
         file : '',
-        downloadUrl : '',
         rows : []
     };
     this.$el.find('.dropdown-menu').append('<li><a href="#" data-locker="'+name+'">'+name+'</a></li>');

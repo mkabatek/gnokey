@@ -26,22 +26,27 @@ var app = {
     debug : true,
     gEndpoint : 'https://www.googleapis.com',
     gClientId : '771539139723-rqai5ge4eutm4q04jh8po5do57b676pr.apps.googleusercontent.com',
-    // KCMTbWeRtNKELVFWrmXiPlXi
-    gAccessToken : null,
-    gUser : null,
     gScopes : [
         'https://www.googleapis.com/auth/drive.install',
         'https://www.googleapis.com/auth/drive.appdata',
         'https://www.googleapis.com/auth/drive.file',
-        'https://www.googleapis.com/auth/userinfo.email'
+        'https://www.googleapis.com/auth/userinfo.email',
+        'https://www.googleapis.com/auth/gmail.send',
     ],
-    rows : [],
-    salt : '',
-    iv : '',
+
+    // user specific
+    gAccessToken : null,
+    gUser : null,
+    gUserEmail: null,
+    key: '',
+    salt: '',
+    iv: '',
 
     // objects
-    gapi : null, // google apis
-    locker : null, // stores and manages the data
+    gapi : null, // google drive api client
+    gmail : null, // gmail api client
+    locker : null, // locker object
+    rows : [],
 
     //
     // App init
@@ -51,7 +56,7 @@ var app = {
         // init
         $(window).trigger('app-beforeLoad', [app]);
 
-        // google api callback
+        // gapi drive api callback
         window.gapiCallback = function(data){
             app.gapi = window.gapi;
             app.loading = true;
@@ -76,7 +81,7 @@ var app = {
             }
         }, 100);
 
-        // listen to loading event
+        // listen to save event
         $(window).on('app-save', function(e) {
             app.save();
         });
@@ -109,7 +114,7 @@ var app = {
     ////////////////////////////
     gCallback : function(data) {
         var gEmail = '';
-
+        
         if(data) {
 
             if(data.error) {
@@ -124,8 +129,7 @@ var app = {
                         'apiKey': app.gClientSecret,
                         'clientId': app.gClientId,
                         'scope': app.gScopes
-                        // 'discoveryDocs': ['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest']
-                    }).then(window.gapiCallback)
+                    }).then(window.gapiCallback);
                 } else {
                     app.loading = false;
                 }
@@ -136,17 +140,18 @@ var app = {
 
                     // Get user id
                     $.ajax({
-                        dataType: "json",
+                        dataType: 'json',
                         url: app.gEndpoint+'/oauth2/v3/userinfo?alt=json',
                         headers: { Authorization: 'Bearer '+ app.gAccessToken },
                         success: function(res){
                             // store email in cookie (for account switching)
                             app.gUser = res.sub;
+                            app.gUserEmail = res.email;
                             cookie.set('gEmail', res.email);
     
                             if(res.email) {
-                                // TODO send to sendgrid
-                                // $.post('https://simplepass.michaelharrisonroth.com:8673/signup', {
+                                // TODO add to sendgrid list
+                                // $.post('https://sendgrid.com/signup', {
                                 //   email : res.email,
                                 //   first_name : res.given_name,
                                 //   last_name: res.family_name,
@@ -156,7 +161,7 @@ var app = {
                             }
     
                             // load drive api
-                            app.loadDriveApi();
+                            app.loadClients();
                         }
                     });
                 }
@@ -173,7 +178,6 @@ var app = {
             gEmail = cookie.get('gEmail');
             if(gEmail) {
                 // auth
-                // console.log(gEmail)
                 app.gapi.auth.authorize({
                     client_id: app.gClientId,
                     scope: app.gScopes,
@@ -189,153 +193,226 @@ var app = {
     },
 
     //
-    // Load API
-    /////////////
-    loadDriveApi : function() {
-
-        // load the drive api
+    // Load client APIs
+    ///////////////////
+    loadClients : function() {
+        app.gapi.client.load('gmail', 'v1');
         app.gapi.client.load('drive', 'v2', window.gapiCallback);
     },
-
-    createAppFile: function() {
-        var boundary = '-------314159265358979323846264';
-        var delimiter = "\r\n--" + boundary + "\r\n";
-        var close_delim = "\r\n--" + boundary + "--";
-        var appState = {
-          number: 'hello',
-          text: 'world'
-        };
-        var fileName = 'passwords.bombe';
-        var contentType = 'application/bombe'
-        var metadata = {
-          'title': fileName,
-          'mimeType': contentType
-        };
-        var base64Data = btoa(JSON.stringify(appState));
-        var multipartRequestBody =
-            delimiter +
-            'Content-Type: application/json\r\n\r\n' +
-            JSON.stringify(metadata) +
-            delimiter +
-            'Content-Type: ' + contentType + '\r\n' +
-            'Content-Transfer-Encoding: base64\r\n' +
-            '\r\n' +
-            base64Data +
-            close_delim;
-        var request = app.gapi.client.request({
-            'path': '/upload/drive/v2/files',
-            'method': 'POST',
-            'params': {'uploadType': 'multipart'},
-            'headers': {
-              'Content-Type': 'multipart/mixed; boundary="' + boundary + '"'
-            },
-            'body': multipartRequestBody});
-
-        request.execute(function(result) {
-            console.log(result)
-        })
-    },
-
 
     //
     // Populate App data
     //////////////////////
     populate : function() {
+        app.loading = true;
+        $(window).trigger('app-beforeLoad', [app]);   
 
-        // setup data
-        app.locker = new Locker('.js-lockers');
+        // setup appdata file
+        app.setupAppData().then(function(){
 
-        // TODO load locker file
-        // based on query ID or default (in app data)
-        // app.createAppFile()
+            // get all locker files
+            app.getLockers().then(function(){
 
-        // get appdata file
-        var request = app.gapi.client.drive.files.list({
-          'q': '\'appdata\' in parents'
-        });
-
-        request.execute(function(resp) {
-
-            var total = resp.items.length;
-
-            // no files yet
-            if(total === 0) {
                 // done loading
                 app.loading = false;
                 $('body').addClass('loaded');
-                $(window).trigger('app-afterLoad', [app]);
-            }
-
-            // load files
-            var loaded = 0;
-            $.each(resp.items, function(i, item) {
-
-                // get file data
-                app.getDriveFileData(item, function(){
-                    loaded++;
-
-                    if(loaded === total) {
-                        // open default
-                        app.locker.change(0);
-
-                        // done loading
-                        app.loading = false;
-                        $('body').addClass('loaded');
-                        $(window).trigger('app-afterLoad', [app]);
-                    }
-                });
-
+                $(window).trigger('app-afterLoad', [app]);   
             });
-
         });
     },
 
     //
-    // get data from a file
-    ////////////////////////
-    getDriveFileData : function(item, callback){
-        var cb = callback || function(){};
+    // setup appdata 
+    ///////////////
+    setupAppData : function() {
+        return new window.Promise(function(resolve, reject) {
+            $(window).trigger('app-before-setupAppData');
 
-        // get data
-        var request = app.gapi.client.drive.files.get({
-          'fileId': item.id
+            // get appdata file(s)
+            var request = app.gapi.client.drive.files.list({
+                'q': '\'appdata\' in parents'
+            });
+            request.execute(function(resp) {
+
+                if (resp.items.length) {
+                    // get app data file contents
+                    app.getDriveFile(resp.items[0].id).then(function(res){
+                        // set app data
+                        app.key = res.key;
+                        app.salt = res.salt;
+                        app.iv = res.iv;
+                        $(window).trigger('app-after-setupAppData', [res]);
+                        resolve();
+                    });
+                } else {
+                    // create app data
+                    app.createAppData().then(function(res){
+                        // set app data
+                        app.key = res.key;
+                        app.salt = res.salt;
+                        app.iv = res.iv;
+                        $(window).trigger('app-after-setupAppData', [res]);
+                        resolve();
+                    }, reject);
+                }
+            });
         });
-        request.execute(function(resp) {
-            var res = resp;
+    },
 
-            if (res.id) {
+    //
+    // create new appdata
+    //
+    // TODO ability to re-key/update?
+    /////////////////////////////////
+    createAppData: function(fileId) {
+        return new window.Promise(function(resolve, reject) {
+            // set meta data
+            var metadata = {
+                name: 'bombepass.json',
+                parents: [ 'appDataFolder']
+            };
 
-                // get file
-                $.ajax(res.selfLink + '?alt=media', {
-                  headers: { Authorization: 'Bearer ' + app.gAccessToken },
-                  success: function(data, status, request) {
-                    //   console.log(data)
-                    // set salt / iv
-                    // for encryption
-                    if(!app.salt) {
-                        app.salt = data.salt;
-                    }
-                    if(!app.iv) {
-                        app.iv = data.iv;
-                    }
+            // build app data
+            var keyData = crypto.generateKey();
+            var appdata = {
+                // set/generate key
+                key: keyData.key,
+                salt: keyData.salt,
+                iv: keyData.iv,
+                created: new Date()
+            };
 
-                    // setup locker data
-                    var title = res.title.replace('.json','');
-                    app.locker.add(title, {
-                        file : res.id,
-                        downloadUrl : res.selfLink + '?alt=media',
-                        rows : data.rows,
-                        salt : data.salt,
-                        iv : data.iv
+            // create multipart form data object
+            var data = new FormData();
+            data.append('metadata', new Blob([ JSON.stringify(metadata) ], { type: 'application/json' }));
+            data.append('file', new Blob([ JSON.stringify(appdata) ], { type: 'application/json' }));
+
+            // upload using v3 for appdata storage
+            $.ajax(app.gEndpoint+'/upload/drive/v3/files?uploadType=multipart', {
+                data: data,
+                headers: { Authorization: 'Bearer ' + app.gAccessToken },
+                contentType: false,
+                processData: false,
+                type: 'POST',
+                success: function() {
+                    resolve(appdata);
+                },
+                error: reject
+            });
+        });
+    },
+
+    //
+    // Get lockers
+    ///////////////
+    getLockers: function() {
+        return new window.Promise(function(resolve, reject) {
+            // setup locker object
+            app.locker = new Locker('.js-lockers');
+
+            // get locker files
+            var lockers = app.gapi.client.drive.files.list({
+                // TODO not deleted?
+                'q': 'mimeType = \'application/bombe\' and trashed = false'
+            });
+            lockers.execute(function(resp) {
+                var total = resp.items.length;
+
+                // no lockers yet
+                if(total === 0) {
+                    resolve();
+                    return;
+                }
+
+                // load lockers
+                var loaded = 0;
+                $.each(resp.items, function(i, item) {
+
+                    // get file contents
+                    app.getDriveFile(item.id).then(function(res){
+                        // TODO handle grant logic here
+                        if (res.grants && res.grants[app.gUserEmail]) {
+                            // 1. check query string or prompt for code
+                            // 2. use code/query string to decrypt grant
+                            // 3. re-encrypt grant with user key
+                            // 4. remove grant from file
+                            // 5. set user's decrypt key on file
+                        }
+
+                        // get decrypted locker key
+                        // TODO handle no userKey logic (e.g. shared through drive only)
+                        var userKey = res.users[app.gUser];
+                        var lockerKey = crypto.decrypt(userKey, app.key, app.salt, app.iv);
+
+                        // setup locker data
+                        app.locker.add(res.title, {
+                            file : item.id,
+                            rows : res.rows,
+                            salt : res.salt,
+                            iv : res.iv,
+                            users: res.users,
+                            grants: res.grants || {},
+                            key: lockerKey,
+                        });
+
+                        loaded++;
+
+                        // all lockers loaded
+                        if(loaded === total) {
+                            // open default
+                            app.locker.change(0);
+                            resolve();
+                        }
                     });
 
-                    cb();
-                  }
                 });
-
-            }
+            });
         });
+    },
 
+    //
+    // add a locker
+    ///////////////
+    addLocker: function(name) {
+
+        var keyData = crypto.generateKey();
+        var encryptedKey = crypto.encrypt(keyData.key, app.key, app.salt, app.iv);
+        var data = {
+            rows: [],
+            key: keyData.key,
+            iv: keyData.iv,
+            salt: keyData.salt,
+            users: {},
+            grants: {}
+        };
+        data.users[app.gUser] = encryptedKey.encrypted;
+        var index = app.locker.add(name, data);
+        app.locker.change(index);
+    },
+
+    //
+    // Get Drive file contents
+    //////////////////////////
+    getDriveFile : function(fileId) {
+        return new window.Promise(function(resolve, reject) {
+            // get file metadata
+            var request = app.gapi.client.drive.files.get({
+                'fileId': fileId
+            });
+            request.execute(function(resp) {
+                 // get file contents
+                if (resp.id) {
+                    $.ajax(resp.selfLink + '?alt=media', {
+                        dataType: 'json',
+                        headers: { 
+                            Authorization: 'Bearer ' + app.gAccessToken
+                        },
+                        success: resolve,
+                        error: reject
+                    });
+                }
+            });
+        });
     },
 
     //
@@ -357,8 +434,56 @@ var app = {
     },
 
     //
-    // Save App Data
-    //////////////////
+    // Create/update an application Drive file
+    //////////////////////////////////////////
+    saveDriveFile: function(fileName, contents, fileId) {
+        return new window.Promise(function(resolve, reject) {
+            var boundary = '-------314159265358979323846264';
+            var delimiter = '\r\n--' + boundary + '\r\n';
+            var close_delim = '\r\n--' + boundary + '--';
+            var contentType = 'application/bombe';
+            var thumbnail = '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';
+            thumbnail = thumbnail.replace(/\+/g, '-').replace(/\//g, '_');
+            var metadata = {
+                title: fileName,
+                mimeType: contentType,
+                iconLink: 'http://bombepass.com.s3-website-us-east-1.amazonaws.com/app/img/favicon.ico',
+                thumbnail: {
+                    image: thumbnail,
+                    mimeType: 'image/png'
+                },
+                contentHints: {
+                    indexableText: fileName + ' passwords ' + ' bombe '
+                }
+            };
+            var base64Data = window.btoa(JSON.stringify(contents));
+            var multipartRequestBody =
+                delimiter +
+                'Content-Type: application/json\r\n\r\n' +
+                JSON.stringify(metadata) +
+                delimiter +
+                'Content-Type: ' + contentType + '\r\n' +
+                'Content-Transfer-Encoding: base64\r\n' +
+                '\r\n' +
+                base64Data +
+                close_delim;
+
+            var request = app.gapi.client.request({
+                'path': '/upload/drive/v2/files/' + (fileId || ''),
+                'method': fileId ? 'PUT' : 'POST',
+                'params': {'uploadType': 'multipart'},
+                'headers': {
+                    'Content-Type': 'multipart/mixed; boundary="' + boundary + '"'
+                },
+                'body': multipartRequestBody});
+
+            request.execute(resolve);
+        });
+    },
+
+    //
+    // Save current state (locker)
+    //////////////////////////////
     save : function() {
         app.loading = true;
 
@@ -366,61 +491,47 @@ var app = {
         // with the new data from the UI
         app.locker.data[app.locker.current].rows = [];
 
-        // set meta data
-        var metadata = {
-          'name': app.locker.current+'.json',
-        };
-        if(!app.locker.data[app.locker.current].file) {
-            metadata.parents = [ 'appDataFolder'];
-        }
-
         // encrypt passwords
         $.each(app.rows, function(i, row) {
+
+            // get locker encryption data
+            var key = app.locker.data[app.locker.current].key;
+            var salt = app.locker.data[app.locker.current].salt;
+            var iv = app.locker.data[app.locker.current].iv;
 
             // get row data
             app.locker.data[app.locker.current].rows[i] = row.getData();
 
-            // encrypt password
-            var encryption = crypto.encrypt(app.locker.data[app.locker.current].rows[i].password, app.gUser, app.salt, app.iv);
+            // encrypt row password
+            var encryption = crypto.encrypt(app.locker.data[app.locker.current].rows[i].password, key, salt, iv);
             app.locker.data[app.locker.current].rows[i].password = encryption.encrypted;
-
-            // set salt / iv
-            if(!app.salt) {
-                app.salt = encryption.salt;
-                app.iv = encryption.iv;
-            }
-
-            app.locker.data[app.locker.current].salt = app.salt;
-            app.locker.data[app.locker.current].iv = app.iv;
 
             // encrypt child rows
             if(app.locker.data[app.locker.current].rows[i].children) {
                 $.each(app.locker.data[app.locker.current].rows[i].children, function(j, r) {
-                    var encryption = crypto.encrypt(r.password, app.gUser, app.salt, app.iv);
+                    var encryption = crypto.encrypt(r.password, key, salt, iv);
                     app.locker.data[app.locker.current].rows[i].children[j].password = encryption.encrypted;
                 });
             }
         });
 
-        // create multipart form data object
-        var data = new FormData();
-        data.append('metadata', new Blob([ JSON.stringify(metadata) ], { type: 'application/json' }));
-        data.append('file', new Blob([ JSON.stringify(app.locker.data[app.locker.current]) ], { type: 'application/json' }));
-
-        $.ajax(app.gEndpoint+'/upload/drive/v3/files/' + app.locker.data[app.locker.current].file + '?uploadType=multipart', {
-            data: data,
-            headers: {Authorization: 'Bearer ' + app.gAccessToken},
-            contentType: false,
-            processData: false,
-            type: app.locker.data[app.locker.current].file ? 'PATCH' : 'POST',
-            success: function(data) {
-                app.locker.data[app.locker.current].file = data.id;
-                app.loading = false;
-                $(window).trigger('app-afterSave', [app]);
-            },
-            error: function(data){
-                console.log(data);
-            }
+        // create/update locker file
+        var data = {
+            title: app.locker.current,
+            rows: app.locker.data[app.locker.current].rows,
+            users: app.locker.data[app.locker.current].users,
+            grants: app.locker.data[app.locker.current].grants,
+            salt: app.locker.data[app.locker.current].salt,
+            iv: app.locker.data[app.locker.current].iv
+        };
+        app.saveDriveFile(
+            app.locker.current, 
+            data, 
+            app.locker.data[app.locker.current].file
+        ).then(function(data) {
+            app.locker.data[app.locker.current].file = data.id;
+            app.loading = false;
+            $(window).trigger('app-afterSave', [app]);
         });
 
     },
@@ -432,15 +543,19 @@ var app = {
         var d = data || {};
 
         // decrypt password
-        if(typeof(d.password) !== 'undefined') {
-            d.password = crypto.decrypt(d.password, app.gUser, app.salt, app.iv);
+        var key = app.locker.data[app.locker.current].key;
+        var salt = app.locker.data[app.locker.current].salt;
+        var iv = app.locker.data[app.locker.current].iv;
+
+        if(typeof(d.password) !== 'undefined' && d.password) {
+            d.password = crypto.decrypt(d.password, key, salt, iv);
         }
 
         // decrypt children passwords
         if(typeof(d.children) !== 'undefined') {
             $.each(d.children, function(i, child){
                 if(typeof(child.password) !== 'undefined') {
-                    d.children[i].password = crypto.decrypt(child.password, app.gUser, app.salt, app.iv);
+                    d.children[i].password = crypto.decrypt(child.password, key, salt, iv);
                 }
             });
         }
@@ -459,9 +574,7 @@ var app = {
     // Remove a row
     /////////////////
     removeRow : function(index) {
-
         app.rows.splice(index, 1);
-
         return true;
     },
 
@@ -520,14 +633,14 @@ var app = {
             return false;
         }
 
-        var csvContent = encodeURI("data:text/csv;charset=utf-8,");
-        csvContent += "Row,Service,Email,Username,Password" + encodeURI("\r\n");
+        var csvContent = encodeURI('data:text/csv;charset=utf-8,');
+        csvContent += 'Row,Service,Email,Username,Password' + encodeURI('\r\n');
         app.rows.forEach(function(row) {
-            csvContent += row.toCSV()
+            csvContent += row.toCSV();
         });
-        var link = document.createElement("a");
-        link.setAttribute("href", csvContent);
-        link.setAttribute("download", app.locker.current+"-bombe.csv");
+        var link = document.createElement('a');
+        link.setAttribute('href', csvContent);
+        link.setAttribute('download', app.locker.current+'-bombe.csv');
         document.body.appendChild(link); // Required for FF
         link.click();
         link.remove();
@@ -616,9 +729,38 @@ var app = {
     // generate password
     //////////////////////
     generatePassword : function() {
-
         // TODO password variations?
         return crypto.random();
+    },
+
+    //
+    // send mail
+    //////////////////////
+    sendMail: function(to, subject, mssg) {
+        return new window.Promise(function(res, rej){
+            var message =
+                    'Content-Type: text/html; charset=UTF-8' +
+                    'From: no-reply@bombepass.com' + '\r\n' +
+                    'To: ' + to + '\r\n' +
+                    subject + '\r\n\r\n' +
+                    mssg;
+
+            // base64 encode
+            var encodedMessage = window.btoa(message);
+            var reallyEncodedMessage = encodedMessage
+                                            .replace(/\+/g, '-')
+                                            .replace(/\//g, '_')
+                                            .replace(/=+$/, '');
+            // send
+            var request = app.gapi.client.gmail.users.messages.send({
+                userId: 'me',
+                resource: {
+                    raw: reallyEncodedMessage,
+                }
+            });
+
+            request.execute(res, rej);
+        });
     }
 
 };

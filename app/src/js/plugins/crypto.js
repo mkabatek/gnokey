@@ -55,8 +55,8 @@ var crypto = {
     },
 
     //
-    // Random string generator
-    ///////////////////////////
+    // Random password generator
+    ////////////////////////////
     random : function(len) {
         var length = len || 16;
         var string = 'abcdefghijklmnopqrstuvwxyz'; //to upper 
@@ -77,6 +77,17 @@ var crypto = {
             password = character;
         }
         return password;
+    },
+
+    //
+    // Generate app key
+    ///////////////////
+    generateKey: function() {
+        return {
+            key: CryptoJS.lib.WordArray.random(64).toString(),
+            salt: CryptoJS.lib.WordArray.random(128/8).toString(CryptoJS.enc.Base64),
+            iv: CryptoJS.lib.WordArray.random(128/8).toString(CryptoJS.enc.Base64)
+        };
     }
 };
 

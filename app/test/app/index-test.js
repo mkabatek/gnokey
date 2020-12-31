@@ -44,11 +44,11 @@ describe('App', function () {
 
         it('should retrieve appdata from google drive');
         
-        it('should call getDriveFileData() for each file');
+        it('should call getLockerFileData() for each file');
 
     });
 
-    describe('getDriveFileData()', function(){
+    describe('getLockerFileData()', function(){
 
         it('should call addRow() for all data rows');
 

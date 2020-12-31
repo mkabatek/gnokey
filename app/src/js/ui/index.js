@@ -24,14 +24,13 @@ module.exports = function(app) {
     $('body').on('click', '.js-add-locker', function(e){
         e.preventDefault();
 
-        bootbox.prompt({ 
+        window.bootbox.prompt({ 
             size: 'small',
             title: 'Add Password Group',
             placeholder: 'Group name',
             callback: function(name){ 
                 if (name) {
-                    var index = app.locker.add(name);
-                    app.locker.change(index);
+                    app.addLocker(name);
                     $(window).trigger('app-save');
                 }
             }
@@ -44,7 +43,7 @@ module.exports = function(app) {
 
         // no locker
         if(!app.locker.current) {
-            bootbox.alert({
+            window.bootbox.alert({
                 message: '<i class="ri-alert-line"></i> Select or create a password group first.',
                 size: 'small'
             });
@@ -52,7 +51,7 @@ module.exports = function(app) {
         }
 
         // show confirm
-        bootbox.confirm({
+        window.bootbox.confirm({
             title: 'Delete "' + app.locker.current + '"',
             size: 'small',
             message: 'Are you sure you want to delete "' + app.locker.current + '"?<br><br><small>This will delete all of the passwords in this group and cannot be undone!</small>',
@@ -70,7 +69,7 @@ module.exports = function(app) {
         // save the current locker
 
         if(!app.locker.current) {
-            bootbox.alert({
+            window.bootbox.alert({
                 message: '<i class="ri-alert-line"></i> Select or create a password group first.',
                 size: 'small'
             });
@@ -85,7 +84,7 @@ module.exports = function(app) {
         e.preventDefault();
 
         if(!app.locker.current) {
-            bootbox.alert({
+            window.bootbox.alert({
                 message: '<i class="ri-alert-line"></i> Select or create a password group first.',
                 size: 'small'
             });
@@ -118,7 +117,7 @@ module.exports = function(app) {
         e.preventDefault();
 
         if(!app.locker.current) {
-            bootbox.alert({
+            window.bootbox.alert({
                 message: '<i class="ri-alert-line"></i> Select or create a password group first.',
                 size: 'small'
             });
@@ -158,5 +157,10 @@ module.exports = function(app) {
             $input.remove();
         }, 1000);
         
+    });
+
+    // share group
+    $('body').on('click', '.js-share-locker', function(e) {
+        app.sendMail('mikeharrisonroth@gmail.com', 'Hello from BombePass', 'This is a test message.');
     });
 };

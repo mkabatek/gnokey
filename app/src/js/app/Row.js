@@ -135,11 +135,9 @@ Row.prototype.destroy = function() {
     var self = this;
 
     // show confirm
-    var subMssg = this.children.length 
-        ? '<br><br><small>This will also delete all of this passwords sub-passwords and cannot be undone!</small>' 
-        : '<br><br><small>This cannot be undone!</small>';
+    var subMssg = this.children.length ? '<br><br><small>This will also delete all of this passwords sub-passwords and cannot be undone!</small>' : '<br><br><small>This cannot be undone!</small>';
 
-    bootbox.confirm({
+    window.bootbox.confirm({
         title: 'Delete Password',
         size: 'small',
         message: 'Are you sure you want to delete this password?' + subMssg,
@@ -206,10 +204,10 @@ Row.prototype.getData = function() {
 Row.prototype.toCSV = function(parent) {
     var index = parent ? parent + '.' + (this.index + 1) : (this.index + 1);
 
-    var str = index + ","
+    var str = index + ',';
     str += this.inputs.map(function(i){
-        return encodeURIComponent(i.data)
-    }).join(",") + encodeURI("\r\n");
+        return encodeURIComponent(i.data);
+    }).join(',') + encodeURI('\r\n');
 
     if (this.children) {
         this.children.forEach(function(c) {
@@ -218,6 +216,6 @@ Row.prototype.toCSV = function(parent) {
     }
 
     return str;
-}
+};
 
 module.exports = Row;
