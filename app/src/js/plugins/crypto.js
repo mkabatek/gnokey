@@ -84,7 +84,7 @@ var crypto = {
     ///////////////////
     generateKey: function() {
         return {
-            key: CryptoJS.lib.WordArray.random(64).toString(),
+            key: CryptoJS.lib.WordArray.random(32).toString(),
             salt: CryptoJS.lib.WordArray.random(128/8).toString(CryptoJS.enc.Base64),
             iv: CryptoJS.lib.WordArray.random(128/8).toString(CryptoJS.enc.Base64)
         };
