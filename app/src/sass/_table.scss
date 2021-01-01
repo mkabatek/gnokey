@@ -16,9 +16,9 @@
             display: inline-block;
         }
 
-        .btn.new {
-            float: right;
-        }
+        // .btn.new {
+        //     float: right;
+        // }
     }
 
     .row {
@@ -39,10 +39,14 @@
         width: 80px;
         margin-top: 3px;
         padding: 0;
-        text-align: right;
+        // text-align: right;
 
         .btn {
             padding: .1rem .4rem 0rem .4rem;
+        }
+
+        .btn:first-child {
+            margin-left: 0.4rem;
         }
     }
 
@@ -168,9 +172,9 @@
                 width: 100%;
             }
 
-            .btn {
-                float: right;
-            }
+            // .btn {
+            //     float: right;
+            // }
 
             .menu {
                 // left: auto;

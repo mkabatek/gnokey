@@ -56,27 +56,23 @@
 
           <div class="table">
             <div class="controls">
-                <button class="js-new-row new btn btn-sm btn-primary" data-toggle="tooltip" data-placement="left" title="Add Password">
-                    <i class="ri-add-line"></i>
-                </button>
-
                 <div class="dropdown js-lockers">
                     <button class="btn btn-secondary dropdown-toggle" type="button" id="lockers" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
                         Groups
                         <span class="caret"></span>
                     </button>
                     <ul class="dropdown-menu" aria-labelledby="lockers"></ul>
-                    <button class="js-download download btn btn-sm btn-secondary" data-toggle="tooltip" data-placement="bottom" title="Download Passwords">
+                    <button class="js-download download btn btn-sm btn-secondary" data-toggle="tooltip" data-placement="bottom" title="Download Password Group">
                         <i class="ri-folder-download-line"></i>
+                    </button>
+                    <button class="btn btn-sm btn-secondary js-share-locker" data-toggle="tooltip" data-placement="bottom" title="Share Password Group">
+                        <span><i class="ri-user-shared-line"></i></span>
                     </button>
                     <button class="btn btn-sm btn-secondary js-remove-locker-confirm" data-toggle="tooltip" data-placement="bottom" title="Delete Password Group">
                         <i class="ri-delete-bin-line"></i>
                     </button>
                     <button class="btn btn-sm btn-secondary js-add-locker" data-toggle="tooltip" data-placement="bottom" title="Add Password Group">
                         <span><i class="ri-folder-add-line"></i></span>
-                    </button>
-                    <button class="btn btn-sm btn-secondary js-share-locker" data-toggle="tooltip" data-placement="bottom" title="Share Password Group">
-                        <span><i class="ri-user-shared-line"></i></span>
                     </button>
                 </div>
             </div>
@@ -93,9 +89,6 @@
             <div class="tbody">
                 <!-- data goes here -->
             </div>
-            <button class="js-new-row new btn btn-sm btn-secondary" style="margin: 2rem auto;">
-                <i class="ri-add-line"></i>
-            </button>
           </div>
         </div>
 
@@ -109,6 +102,10 @@
                 </div>
             </div>
         </div>
+
+        <button class="js-new-row btn btn-fab btn-primary" data-toggle="tooltip" data-placement="left" title="Add Password">
+            <i class="ri-add-line"></i>
+        </button>
 
         <div class="load-overlay">
             <button class="js-login btn btn-danger">

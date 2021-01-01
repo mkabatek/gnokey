@@ -351,7 +351,8 @@ var app = {
                                 lockerKey = crypto.decrypt(res.grants[app.gUserEmail], key, res.salt, res.iv);
                                 
                                 // 3. re-encrypt grant with user key and set to users list
-                                res.users[app.gUser] = crypto.encrypt(lockerKey, app.key, app.salt, app.iv);
+                                var lockerKeyEnc = crypto.encrypt(lockerKey, app.key, app.salt, app.iv);
+                                res.users[app.gUser] = lockerKeyEnc.encrypted;
 
                                 // 4. remove grant from locker
                                 delete res.grants[app.gUserEmail];
@@ -817,11 +818,11 @@ var app = {
                         action: 'grant',
                         token: token.key
                     });
-                    var url = window.location.href.split('?')[0] + '?state=' + encodeURIComponent(state);
+                    var url = window.location.href.replace('#', '').split('?')[0] + '?state=' + encodeURIComponent(state);
                     app.sendMail(
                         user, 
                         'Bombe - Shared Password Group Invite',
-                        '<p>Click the following link to accept a shared invite to ' + app.locker.current + '.</p> ' + url
+                        '<p>Click the following link to accept a shared invite to the password group "' + app.locker.current + '".</p> ' + url
                     );
                     
                     // resolve
