@@ -92,7 +92,7 @@ module.exports = function(app) {
         }
 
         // add a row
-        app.addRow({}, $('.table .tbody'), true );
+        app.addRow({}, $('.table .tbody'), false );
 
         // save
         $(window).trigger('app-save');
@@ -161,6 +161,25 @@ module.exports = function(app) {
 
     // share group
     $('body').on('click', '.js-share-locker', function(e) {
-        app.sendMail('mikeharrisonroth@gmail.com', 'Hello from BombePass', 'This is a test message.');
+
+        if(!app.locker.current) {
+            window.bootbox.alert({
+                message: '<i class="ri-alert-line"></i> Select or create a password group first.',
+                size: 'small'
+            });
+            return false;
+        }
+
+        window.bootbox.prompt({ 
+            size: 'small',
+            title: 'Share "' + app.locker.current + '"',
+            placeholder: 'Enter email',
+            // pattern: '(?:[a-z0-9!#$%&\'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&\'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])',
+            callback: function(email){ 
+                if (email) {
+                    app.shareLocker(email);
+                }
+            }
+        });
     });
 };

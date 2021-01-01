@@ -304,12 +304,21 @@ var app = {
 
     //
     // Get lockers
-    ///////////////
+    // TODO break up this method
+    /////////////////////////////
     getLockers: function() {
         return new window.Promise(function(resolve, reject) {
             // setup locker object
             app.locker = new Locker('.js-lockers');
 
+            // get url state
+            var appState = '{}';
+            var params = (new window.URL(document.location)).searchParams;
+            var state = params.get('state');
+            if (state) {
+                appState = JSON.parse(state);
+            }
+            
             // get locker files
             var lockers = app.gapi.client.drive.files.list({
                 // TODO not deleted?
@@ -329,38 +338,62 @@ var app = {
                 $.each(resp.items, function(i, item) {
 
                     // get file contents
-                    app.getDriveFile(item.id).then(function(res){
-                        // TODO handle grant logic here
+                    app.getDriveFile(item.id).then(function(res) {
+                        // TODO move grant logic to another method
+                        var lockerKey;
                         if (res.grants && res.grants[app.gUserEmail]) {
-                            // 1. check query string or prompt for code
-                            // 2. use code/query string to decrypt grant
-                            // 3. re-encrypt grant with user key
-                            // 4. remove grant from file
-                            // 5. set user's decrypt key on file
+                            
+                            // 1. check query string for grant key
+                            if (appState.action === 'grant' && (~appState.ids.indexOf(item.id))) {
+                                var key = appState.token;
+
+                                // 2. use code/query string to decrypt grant
+                                lockerKey = crypto.decrypt(res.grants[app.gUserEmail], key, res.salt, res.iv);
+                                
+                                // 3. re-encrypt grant with user key and set to users list
+                                var lockerKeyEnc = crypto.encrypt(lockerKey, app.key, app.salt, app.iv);
+                                res.users[app.gUser] = lockerKeyEnc.encrypted;
+
+                                // 4. remove grant from locker
+                                delete res.grants[app.gUserEmail];
+                            }
+                        } else {
+                            // get decrypted locker key
+                            var userKey = res.users[app.gUser];
+                            if (userKey) {
+                                lockerKey = crypto.decrypt(userKey, app.key, app.salt, app.iv);
+                            }
                         }
 
-                        // get decrypted locker key
-                        // TODO handle no userKey logic (e.g. shared through drive only)
-                        var userKey = res.users[app.gUser];
-                        var lockerKey = crypto.decrypt(userKey, app.key, app.salt, app.iv);
-
                         // setup locker data
-                        app.locker.add(res.title, {
-                            file : item.id,
-                            rows : res.rows,
-                            salt : res.salt,
-                            iv : res.iv,
-                            users: res.users,
-                            grants: res.grants || {},
-                            key: lockerKey,
-                        });
+                        // TODO handle no userKey logic (e.g. shared through drive only, prompt for code?)
+                        if (lockerKey) {
+                            app.locker.add(res.title, {
+                                file : item.id,
+                                rows : res.rows,
+                                salt : res.salt,
+                                iv : res.iv,
+                                users: res.users,
+                                grants: res.grants || {},
+                                key: lockerKey,
+                            });
+                        }
 
                         loaded++;
 
                         // all lockers loaded
                         if(loaded === total) {
-                            // open default
-                            app.locker.change(0);
+                            // determine which locker to display
+                            if (appState && appState.action === 'open') {
+                                // get index based on fileId
+                                var id = (appState.ids && appState.ids.length) ? appState.ids[0] : '';
+                                var index = Object.values(app.locker.data).findIndex(function(l) {
+                                    return (l.file === id);
+                                });
+                                app.locker.change(index || 0);
+                            } else {
+                                app.locker.change(0);
+                            }
                             resolve();
                         }
                     });
@@ -485,53 +518,56 @@ var app = {
     // Save current state (locker)
     //////////////////////////////
     save : function() {
-        app.loading = true;
+        return new window.Promise(function(resolve, reject) {
+            app.loading = true;
 
-        // clear out the rows to be updated
-        // with the new data from the UI
-        app.locker.data[app.locker.current].rows = [];
+            // clear out the rows to be updated
+            // with the new data from the UI
+            app.locker.data[app.locker.current].rows = [];
 
-        // encrypt passwords
-        $.each(app.rows, function(i, row) {
+            // encrypt passwords
+            $.each(app.rows, function(i, row) {
 
-            // get locker encryption data
-            var key = app.locker.data[app.locker.current].key;
-            var salt = app.locker.data[app.locker.current].salt;
-            var iv = app.locker.data[app.locker.current].iv;
+                // get locker encryption data
+                var key = app.locker.data[app.locker.current].key;
+                var salt = app.locker.data[app.locker.current].salt;
+                var iv = app.locker.data[app.locker.current].iv;
 
-            // get row data
-            app.locker.data[app.locker.current].rows[i] = row.getData();
+                // get row data
+                app.locker.data[app.locker.current].rows[i] = row.getData();
 
-            // encrypt row password
-            var encryption = crypto.encrypt(app.locker.data[app.locker.current].rows[i].password, key, salt, iv);
-            app.locker.data[app.locker.current].rows[i].password = encryption.encrypted;
+                // encrypt row password
+                var encryption = crypto.encrypt(app.locker.data[app.locker.current].rows[i].password, key, salt, iv);
+                app.locker.data[app.locker.current].rows[i].password = encryption.encrypted;
 
-            // encrypt child rows
-            if(app.locker.data[app.locker.current].rows[i].children) {
-                $.each(app.locker.data[app.locker.current].rows[i].children, function(j, r) {
-                    var encryption = crypto.encrypt(r.password, key, salt, iv);
-                    app.locker.data[app.locker.current].rows[i].children[j].password = encryption.encrypted;
-                });
-            }
-        });
+                // encrypt child rows
+                if(app.locker.data[app.locker.current].rows[i].children) {
+                    $.each(app.locker.data[app.locker.current].rows[i].children, function(j, r) {
+                        var encryption = crypto.encrypt(r.password, key, salt, iv);
+                        app.locker.data[app.locker.current].rows[i].children[j].password = encryption.encrypted;
+                    });
+                }
+            });
 
-        // create/update locker file
-        var data = {
-            title: app.locker.current,
-            rows: app.locker.data[app.locker.current].rows,
-            users: app.locker.data[app.locker.current].users,
-            grants: app.locker.data[app.locker.current].grants,
-            salt: app.locker.data[app.locker.current].salt,
-            iv: app.locker.data[app.locker.current].iv
-        };
-        app.saveDriveFile(
-            app.locker.current, 
-            data, 
-            app.locker.data[app.locker.current].file
-        ).then(function(data) {
-            app.locker.data[app.locker.current].file = data.id;
-            app.loading = false;
-            $(window).trigger('app-afterSave', [app]);
+            // create/update locker file
+            var data = {
+                title: app.locker.current,
+                rows: app.locker.data[app.locker.current].rows,
+                users: app.locker.data[app.locker.current].users,
+                grants: app.locker.data[app.locker.current].grants,
+                salt: app.locker.data[app.locker.current].salt,
+                iv: app.locker.data[app.locker.current].iv
+            };
+            app.saveDriveFile(
+                app.locker.current, 
+                data, 
+                app.locker.data[app.locker.current].file
+            ).then(function(data) {
+                app.locker.data[app.locker.current].file = data.id;
+                app.loading = false;
+                $(window).trigger('app-afterSave', [app]);
+                resolve();
+            }).catch(reject);
         });
 
     },
@@ -575,6 +611,7 @@ var app = {
     /////////////////
     removeRow : function(index) {
         app.rows.splice(index, 1);
+        $(window).trigger('app-save');
         return true;
     },
 
@@ -647,7 +684,7 @@ var app = {
     },
 
     //
-    // sort
+    // Sort
     //////////
     sort : function(direction) {
         var dir = direction || 'ASC';
@@ -701,7 +738,7 @@ var app = {
     },
 
     //
-    // filter
+    // Filter
     ///////////
     filter : function(search) {
 
@@ -726,7 +763,7 @@ var app = {
     },
 
     //
-    // generate password
+    // Generate password
     //////////////////////
     generatePassword : function() {
         // TODO password variations?
@@ -734,7 +771,73 @@ var app = {
     },
 
     //
-    // send mail
+    // Share locker
+    ///////////////////////
+    shareLocker: function(email) {
+        return new window.Promise(function(resolve, reject) {
+
+            // get email
+            // TODO validate email
+            var user = email.toLowerCase();
+            var fileId = app.locker.data[app.locker.current].file;
+
+            if (!user || !fileId) {
+                return false;
+            }
+
+            // create encrypted grant
+            var token = crypto.generateKey();
+            var key = app.locker.data[app.locker.current].key;
+            var salt = app.locker.data[app.locker.current].salt;
+            var iv = app.locker.data[app.locker.current].iv;
+
+            // set encrypted grant using token
+            var grant = crypto.encrypt(key, token.key, salt, iv);
+            app.locker.data[app.locker.current].grants[user] = grant.encrypted;
+
+            // save grant
+            app.save().then(function(){
+                // insert permission
+                var fileId = app.locker.data[app.locker.current].file;
+                var permission = {
+                    'type': 'user',
+                    'role': 'writer',
+                    'value': user
+                };
+
+                var request = app.gapi.client.drive.permissions.insert({
+                    resource: permission,
+                    fileId: fileId,
+                    fields: 'id',
+                    sendNotificationEmails: false
+                });
+                request.execute(function(resp) { 
+                    // send email
+                    var state = JSON.stringify({
+                        ids: [fileId],
+                        action: 'grant',
+                        token: token.key
+                    });
+                    var url = window.location.href.replace('#', '').split('?')[0] + '?state=' + encodeURIComponent(state);
+                    app.sendMail(
+                        user, 
+                        'Bombe - Shared Password Group Invite',
+                        '<p>Click the following link to accept a shared invite to the password group "' + app.locker.current + '".</p> ' + url
+                    );
+                    
+                    // resolve
+                    resolve({ 
+                        fileId: fileId,
+                        user: user, 
+                        grant: grant 
+                    });
+                });
+            });
+        });
+    },
+
+    //
+    // Send email
     //////////////////////
     sendMail: function(to, subject, mssg) {
         return new window.Promise(function(res, rej){
@@ -742,7 +845,7 @@ var app = {
                     'Content-Type: text/html; charset=UTF-8' +
                     'From: no-reply@bombepass.com' + '\r\n' +
                     'To: ' + to + '\r\n' +
-                    subject + '\r\n\r\n' +
+                    'Subject: ' + subject + '\r\n\r\n' +
                     mssg;
 
             // base64 encode

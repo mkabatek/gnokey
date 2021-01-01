@@ -6,10 +6,6 @@ body {
         border: 1px solid $brand-primary !important;
     }
 
-    .modal-dialog {
-        margin: 100px auto;
-    }
-
     .modal-title {
         float: left;
     }
@@ -22,8 +18,14 @@ body {
             font-size: 1.2rem;
         }
 
-        &.new {
-            display: none !important;
+        &.btn-fab {
+            border-radius: 50%;
+            position: fixed;
+            right: 30px;
+            bottom: 30px;
+            width: 60px;
+            height: 60px;
+            z-index: 2;
         }
     }
 
