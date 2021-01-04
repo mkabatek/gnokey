@@ -1,4 +1,4 @@
-# Bombe Password Manager
+# Gnokey Password Manager
 
 A simple Google Drive based password manager for startups/early-stage companies.
 
@@ -18,6 +18,7 @@ The entire app is client side and stores nothing on a server, but is able to tak
 1. `npm install & bower install`
 2. use serve or just open /public/index.html
 3. `gulp` will run tests, lint, compile browserify, compiles sass, and minify
+4. serve on 8081 using `ws`
 
 * Tests are run using `gulp-mocha-phantomjs` & `chai` and can be run command line or in the browser.
 * All dependencies are loaded via Bower. Right now it is only Bootstrap (v4-alpha), jQuery & Crypto-JS.

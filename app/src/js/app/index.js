@@ -15,7 +15,7 @@ var cookie = require('../plugins/cookie');
 //  Google drive based password manager
 //
 // @author Mike Roth <mike@manyuses.com>
-// @version 0.0.5
+// @version 0.1.0
 //
 ///////////////////
 var app = {
@@ -233,6 +233,8 @@ var app = {
                 'q': '\'appdata\' in parents'
             });
             request.execute(function(resp) {
+                // var key = new RSA({b: 512}, );
+                // console.log(key);
 
                 if (resp.items.length) {
                     // get app data file contents
@@ -266,9 +268,10 @@ var app = {
     /////////////////////////////////
     createAppData: function(fileId) {
         return new window.Promise(function(resolve, reject) {
+
             // set meta data
             var metadata = {
-                name: 'bombepass.json',
+                name: 'gnokey.json',
                 parents: [ 'appDataFolder']
             };
 
@@ -322,7 +325,7 @@ var app = {
             // get locker files
             var lockers = app.gapi.client.drive.files.list({
                 // TODO not deleted?
-                'q': 'mimeType = \'application/bombe\' and trashed = false'
+                'q': 'mimeType = \'application/gnokey\' and trashed = false'
             });
             lockers.execute(function(resp) {
                 var total = resp.items.length;
@@ -474,19 +477,19 @@ var app = {
             var boundary = '-------314159265358979323846264';
             var delimiter = '\r\n--' + boundary + '\r\n';
             var close_delim = '\r\n--' + boundary + '--';
-            var contentType = 'application/bombe';
+            var contentType = 'application/gnokey';
             var thumbnail = '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';
             thumbnail = thumbnail.replace(/\+/g, '-').replace(/\//g, '_');
             var metadata = {
                 title: fileName,
                 mimeType: contentType,
-                iconLink: 'http://bombepass.com.s3-website-us-east-1.amazonaws.com/app/img/favicon.ico',
+                iconLink: 'http://gnokey.com.s3-website-us-east-1.amazonaws.com/app/img/favicon.ico',
                 thumbnail: {
                     image: thumbnail,
                     mimeType: 'image/png'
                 },
                 contentHints: {
-                    indexableText: fileName + ' passwords ' + ' bombe '
+                    indexableText: fileName + ' passwords ' + ' gnokey '
                 }
             };
             var base64Data = window.btoa(JSON.stringify(contents));
@@ -677,7 +680,7 @@ var app = {
         });
         var link = document.createElement('a');
         link.setAttribute('href', csvContent);
-        link.setAttribute('download', app.locker.current+'-bombe.csv');
+        link.setAttribute('download', app.locker.current+'-gnokey.csv');
         document.body.appendChild(link); // Required for FF
         link.click();
         link.remove();
@@ -821,7 +824,7 @@ var app = {
                     var url = window.location.href.replace('#', '').split('?')[0] + '?state=' + encodeURIComponent(state);
                     app.sendMail(
                         user, 
-                        'Bombe - Shared Password Group Invite',
+                        'Gnokey - Shared Password Group Invite',
                         '<p>Click the following link to accept a shared invite to the password group "' + app.locker.current + '".</p> ' + url
                     );
                     
@@ -843,7 +846,7 @@ var app = {
         return new window.Promise(function(res, rej){
             var message =
                     'Content-Type: text/html; charset=UTF-8' +
-                    'From: no-reply@bombepass.com' + '\r\n' +
+                    'From: no-reply@gnokey.com' + '\r\n' +
                     'To: ' + to + '\r\n' +
                     'Subject: ' + subject + '\r\n\r\n' +
                     mssg;

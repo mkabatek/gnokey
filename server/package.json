@@ -1,5 +1,5 @@
 {
-  "name": "bombe-server",
+  "name": "gnokey-server",
   "version": "1.0.0",
   "description": "Simple storage of SimplePass customers.",
   "main": "index.js",

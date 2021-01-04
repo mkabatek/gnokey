@@ -1,5 +1,5 @@
 
-// --- Bombe signup aggregator / Subscription check --- //
+// --- Gnokey signup aggregator / Subscription check --- //
 var express = require('express');
 var cors = require('cors');
 var app = express();
