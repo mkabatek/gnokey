@@ -5,13 +5,14 @@ A simple Google Drive based password manager for startups/early-stage companies.
 ## Overview
 
 1. The app authenticates with Google OAuth (client side flow) - *should enable 2FA for your account also to be on the safe side.
-2. Use Google Drive private app data folder to store a JSON blob of password data.
-3. Encrypt passwords with Crypto JS AES (salt/iv stored along with the data in Drive) and using the users Google OAuth Sub (unique id) as the passphrase.
+2. Use Google Drive private app data folder to store a JSON blob of user information (private key, etc.). NOTE: future iteration will use a split key stored on an external API to provide more security.
+3. Encrypt passwords with Crypto JS AES (salt/iv stored along with the data in Drive) using the users private key.
 4. Output the JSON data in rows that can be added/removed and easily copied.
+5. Groups of passwords are shared using a browser based RSA key pub/priv key sharing mechanism.
 
-The entire app is client side and stores nothing on a server, but is able to take advantage of Google Drive data storage (giving you access to your passwords in the cloud) while being encrypted in Drive at the same time.
+The entire app is client side and stores nothing on a server, but is able to take advantage of Google Drive data storage (giving you access to your passwords in the cloud) while being encrypted in Drive at the same time!
 
-**NOTE: Using something more clever (other than the users Google OAuth sub) for the AES passphrase would help to increase the security
+![Gnokey Architecture](architecture.png)
 
 ## Contributing
 
@@ -23,6 +24,6 @@ The entire app is client side and stores nothing on a server, but is able to tak
 * Tests are run using `gulp-mocha-phantomjs` & `chai` and can be run command line or in the browser.
 * All dependencies are loaded via Bower. Right now it is only Bootstrap (v4-alpha), jQuery & Crypto-JS.
 
-# Deployment
+## Deployment
 
 Copy `/public` to s3 bucket.
