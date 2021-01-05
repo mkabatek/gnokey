@@ -8,7 +8,9 @@
     "start": "gulp",
     "build": "gulp build"
   },
-  "dependencies": {},
+  "dependencies": {
+    "node-rsa": "^1.1.1"
+  },
   "devDependencies": {
     "browserify": "^9.0.8",
     "chai": "^3.5.0",

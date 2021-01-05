@@ -58,6 +58,9 @@ var crypto = {
     // Random password generator
     ////////////////////////////
     random : function(len) {
+        // TODO TEST ONLY
+        crypto.rsa.encrypt('thisisarandompassword');
+
         var length = len || 16;
         var string = 'abcdefghijklmnopqrstuvwxyz'; //to upper 
         var numeric = '0123456789';
@@ -88,6 +91,46 @@ var crypto = {
             salt: CryptoJS.lib.WordArray.random(128/8).toString(CryptoJS.enc.Base64),
             iv: CryptoJS.lib.WordArray.random(128/8).toString(CryptoJS.enc.Base64)
         };
+    },
+
+    //
+    // RSA Encryption
+    // for user keys / sharing
+    ///////////////////////////
+    rsa: {
+        encrypt: function(str) {
+            var Buffer = window.Buffer.Buffer;
+            var RSA = window.RSA;
+    
+            // generate user private key
+            var key = new RSA({b: 512});
+            var publicDer = key.exportKey('pkcs8-public-der');
+            var privateDer = key.exportKey('pkcs1-der');
+            
+            console.log('public', 'hex:', publicDer.toString('hex'), '64:', publicDer.toString('base64') );
+            console.log('private', privateDer.toString('hex'));
+    
+            // concat and create a "sharekey", strip base64 padding
+            var shareKey = ('107270950731756776018.' + publicDer.toString('base64').replace(/=?=/,''));
+            console.log('shareKey', shareKey);
+    
+            // import pub key
+            var pk = Buffer.from(shareKey.split('.')[1], 'base64');
+            var pubKey = new RSA();
+            pubKey.importKey(pk, 'pkcs8-public-der');
+    
+            console.log('publickey?', pubKey.isPublic(true));
+            var enc = pubKey.encrypt(str);
+            console.log('encrypted', enc.toString('hex'));
+    
+            // decrypt using private key
+            var decrypted = key.decrypt(enc, 'utf8');
+            console.log('decrypted', decrypted);
+        },
+
+        decrypt: function(key, str) {
+            
+        }
     }
 };
 
