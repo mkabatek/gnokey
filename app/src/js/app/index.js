@@ -196,7 +196,6 @@ var app = {
     // Load client APIs
     ///////////////////
     loadClients : function() {
-        console.log(app.gUser);
         app.gapi.client.load('gmail', 'v1');
         app.gapi.client.load('drive', 'v2', window.gapiCallback);
     },

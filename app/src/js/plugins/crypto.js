@@ -33,6 +33,7 @@ var crypto = {
         // do the encryption
         salt = CryptoJS.enc.Base64.parse(result.salt);
         iv = CryptoJS.enc.Base64.parse(result.iv);
+        // TODO 256 and 1000 iterations?
         var key = CryptoJS.PBKDF2(passphrase, salt, { keySize: 128/32, iterations: 100 });
         var encrypted = CryptoJS.AES.encrypt(data, key, { iv: iv, mode: CryptoJS.mode.CBC, padding: CryptoJS.pad.Pkcs7 });
 
@@ -59,7 +60,8 @@ var crypto = {
     ////////////////////////////
     random : function(len) {
         // TODO TEST ONLY
-        crypto.rsa.encrypt('thisisarandompassword');
+        crypto.rsa.test();
+        /////////////////
 
         var length = len || 16;
         var string = 'abcdefghijklmnopqrstuvwxyz'; //to upper 
@@ -83,8 +85,9 @@ var crypto = {
     },
 
     //
-    // Generate app key
-    ///////////////////
+    // Generate an aes key and
+    // accompanying iv / salt
+    //////////////////////////
     generateKey: function() {
         return {
             key: CryptoJS.lib.WordArray.random(32).toString(),
@@ -98,38 +101,128 @@ var crypto = {
     // for user keys / sharing
     ///////////////////////////
     rsa: {
-        encrypt: function(str) {
+
+        // create a new RSA keypair
+        // and return in hex format
+        createKeys: function(email) {
             var Buffer = window.Buffer.Buffer;
             var RSA = window.RSA;
-    
-            // generate user private key
-            var key = new RSA({b: 512});
+            var key = new RSA({ b: 512 });
             var publicDer = key.exportKey('pkcs8-public-der');
             var privateDer = key.exportKey('pkcs1-der');
-            
-            console.log('public', 'hex:', publicDer.toString('hex'), '64:', publicDer.toString('base64') );
-            console.log('private', privateDer.toString('hex'));
-    
-            // concat and create a "sharekey", strip base64 padding
-            var shareKey = ('107270950731756776018.' + publicDer.toString('base64').replace(/=?=/,''));
-            console.log('shareKey', shareKey);
-    
-            // import pub key
-            var pk = Buffer.from(shareKey.split('.')[1], 'base64');
-            var pubKey = new RSA();
-            pubKey.importKey(pk, 'pkcs8-public-der');
-    
-            console.log('publickey?', pubKey.isPublic(true));
-            var enc = pubKey.encrypt(str);
-            console.log('encrypted', enc.toString('hex'));
-    
-            // decrypt using private key
-            var decrypted = key.decrypt(enc, 'utf8');
-            console.log('decrypted', decrypted);
+            var pubHex = publicDer.toString('hex');
+            var email = Buffer.from(email).toString('hex');
+
+            return {
+                public: pubHex,
+                private: privateDer.toString('hex'),
+                share: email+'.'+pubHex
+            }
         },
 
-        decrypt: function(key, str) {
-            
+        // parse a hex keypair and
+        // return an RSA object
+        parseKeyPair: function(pubKey, privKey) {
+            var Buffer = window.Buffer.Buffer;
+            var RSA = window.RSA;
+
+            var keyPair = new RSA();
+            keyPair.importKey(Buffer.from(pubKey, 'hex'), 'pkcs8-public-der');
+            keyPair.importKey(Buffer.from(privKey, 'hex'), 'pkcs1-der');
+
+            return keyPair;
+        },
+
+        // parse a users "sharekey"
+        // to convert it from base64
+        // to RSA pub key and user email
+        parseShareKey: function(shareKey) {
+            var Buffer = window.Buffer.Buffer;
+            var RSA = window.RSA;
+
+            var skparts = shareKey.split('.');
+            var email =  Buffer.from(skparts[0], 'hex').toString('utf8');
+            var key = skparts[1];
+            var pubKey = new RSA();
+            pubKey.importKey(Buffer.from(key, 'hex'), 'pkcs8-public-der');
+
+            if (!pubKey.isPublic(true)) {
+                console.warn('Attempted to parse a private key from a sharekey!');
+                return false;
+            }
+
+            return {
+                email: email,
+                key: pubKey
+            };
+        },
+
+        // encrypt something using
+        // a users public key, we 
+        // always convert encrypted data 
+        // to hex for transfer/storage
+        encryptPublic: function(pubKey, str) {
+            if (!pubKey.isPublic(true)) {
+                console.warn('Attempted to "encryptPublic" using a private key!');
+                return false;
+            }
+
+            var enc = pubKey.encrypt(str);
+            return enc.toString('hex');
+        },
+
+        // encrypt a utf8 string
+        // and return it in hex
+        encrypt: function(keyPair, str) {
+            var enc = keyPair.encrypt(str);
+            return enc.toString('hex');
+        },
+
+        // decrypt a hex string
+        decrypt: function(keyPair, str) {
+            var Buffer = window.Buffer.Buffer;
+            var enc = Buffer.from(str, 'hex');
+            return keyPair.decrypt(enc, 'utf8');
+        },
+
+        // TODO move this to a test once we figure
+        // out how to import NodeRSA as a module.
+        test: function() {
+            // create keys
+            var keys = crypto.rsa.createKeys('test@test.com');
+            console.log(keys);
+
+            // parse share key
+            var shareKey = crypto.rsa.parseShareKey(keys.share);
+            console.log(shareKey);
+
+            // encrypt a key with a public key
+            var aesKey = crypto.generateKey();
+            console.log('aeskey', aesKey);
+            var encAes = crypto.rsa.encryptPublic(shareKey.key, aesKey.key);
+            console.log('encrypted aeskey (pub)', encAes);
+
+            // decrypt using private key
+            var keypair = crypto.rsa.parseKeyPair(keys.public, keys.private);
+            var decAes = crypto.rsa.decrypt(keypair, encAes);
+            console.log('decrypted aes (priv)', decAes);
+
+            // encrypt using private key
+            var encAesPriv = crypto.rsa.encrypt(keypair, aesKey.key);
+            console.log('encrypted aeskey (priv)', encAesPriv);
+
+            // decrypt again using private key
+            var decAesPriv = crypto.rsa.decrypt(keypair, encAes);
+            console.log('decrypted aes (priv #2)', decAesPriv);
+
+            // attempt to decrypt using pub key
+            try {
+                console.log('decrypt with public?');
+                var decPub = crypto.rsa.decrypt(shareKey.key, encAes);
+                console.log(decPub);
+            } catch(err) {
+                console.warn(err.message);
+            }
         }
     }
 };
