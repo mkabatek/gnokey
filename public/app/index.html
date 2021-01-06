@@ -37,14 +37,31 @@
             </div>
 
             <div class="navbar-collapse">
-                <button class="js-logout logout btn btn-sm btn-secondary" data-toggle="tooltip" data-placement="bottom" title="Logout">
-                    <i class="ri-lock-line"></i>
-                </button>
-                <div class="generator" data-toggle="tooltip" data-placement="bottom" title="Generate password">
-                    <button class="js-generate btn btn-sm btn-secondary">
-                        <i class="ri-rotate-lock-fill"></i>
-                    </button>
-                </div>
+                <ul class="nav">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link btn btn-sm btn-secondary user" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
+                            <img src="" class="js-avatar avatar" />
+                        </a>
+                        <div class="dropdown-menu">
+                          <div class="profile">
+                              <small>Logged in as</small><br>
+                              <span class="js-email"></span>
+                              <div class="dropdown-divider"></div>
+                              <small data-toggle="tooltip" data-placement="bottom" title="A public ID used to enable password group sharing.">
+                                  Public ID <i class="ri-information-line"></i>
+                              </small><br>
+                              <textarea class="js-public-key" rows="3"></textarea>
+                          </div>
+                          <div class="dropdown-divider"></div>
+                          <a class="js-logout dropdown-item" href="#" style="text-align:right;">Logout</a>
+                        </div>
+                    </li>
+                    <li class="generator nav-item" data-toggle="tooltip" data-placement="bottom" title="Generate password">
+                        <a class="js-generate nav-link btn btn-sm btn-secondary">
+                            <i class="ri-rotate-lock-fill"></i>
+                        </a>
+                    </li>
+                </ul>
             </div>
 
             <form class="form-inline">

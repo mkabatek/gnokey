@@ -59,10 +59,6 @@ var crypto = {
     // Random password generator
     ////////////////////////////
     random : function(len) {
-        // TODO TEST ONLY
-        crypto.rsa.test();
-        /////////////////
-
         var length = len || 16;
         var string = 'abcdefghijklmnopqrstuvwxyz'; //to upper 
         var numeric = '0123456789';
@@ -111,12 +107,12 @@ var crypto = {
             var publicDer = key.exportKey('pkcs8-public-der');
             var privateDer = key.exportKey('pkcs1-der');
             var pubHex = publicDer.toString('hex');
-            var email = Buffer.from(email).toString('hex');
+            var emailHex = Buffer.from(email).toString('hex');
 
             return {
                 public: pubHex,
                 private: privateDer.toString('hex'),
-                share: email+'.'+pubHex
+                share: emailHex+'.'+pubHex
             }
         },
 
@@ -187,9 +183,10 @@ var crypto = {
 
         // TODO move this to a test once we figure
         // out how to import NodeRSA as a module.
-        test: function() {
+        // NOTE: DEV ONLY
+        _test: function() {
             // create keys
-            var keys = crypto.rsa.createKeys('test@test.com');
+            var keys = crypto.rsa.createKeys('test@manyuses.com');
             console.log(keys);
 
             // parse share key
