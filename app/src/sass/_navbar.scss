@@ -4,6 +4,8 @@
     border: 1px solid #ddd;
 
     a.navbar-brand {
+        padding-top: 0.75rem;
+        
         img{
             width: 100px;
         } 
@@ -20,6 +22,38 @@
         width: 408px;
     }
 
+    .btn.user {
+        margin-left: 0.4rem;
+    }
+
+    .dropdown {
+        .dropdown-menu {
+            right: 0;
+            left: auto;
+            top: 46px;
+            margin-left: 1rem;
+        }
+    }
+
+    .avatar {
+        width: 18px;
+        border-radius: 50%;
+        margin: 0.3rem 0.1rem 0.4rem 0.1rem;
+    }
+
+    .profile {
+        padding: 0.4rem 1.6rem;
+
+        textarea {
+            border: 1px solid rgb(239, 239, 239);
+            width: 220px;
+            border-radius: 5px;
+            margin: 0px;
+            font-family: monospace;
+            font-size: small;
+        }
+    }
+
     .btn {
         float: right;
     }
@@ -29,9 +63,7 @@
     }
 
     .btn.save,
-    .btn.logout,
-    .btn.download,
-    .btn.new {
+    .btn.logout {
         display: none;
     }
 
@@ -50,6 +82,12 @@ body.loaded {
         display: block;
     }
 
+}
+
+body:not(.loaded) {
+    .user {
+        display: none;
+    }
 }
 
 @media(max-width: 768px) {

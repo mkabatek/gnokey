@@ -20,4 +20,11 @@ describe('crypto', function () {
 
     expect(decrypted).to.equal(data);
   });
+
+  it('should handle rsa keypairs', function () {
+
+    // TODO need to load rsa.js via require
+
+    expect(true)
+  });
 });

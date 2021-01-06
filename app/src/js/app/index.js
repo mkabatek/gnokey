@@ -38,9 +38,13 @@ var app = {
     gAccessToken : null,
     gUser : null,
     gUserEmail: null,
-    key: '',
-    salt: '',
-    iv: '',
+    gAvatar: '',
+    keys: {
+        public: '',
+        private: '',
+        share: ''
+    },
+    keypair: null,
 
     // objects
     gapi : null, // google drive api client
@@ -147,7 +151,10 @@ var app = {
                             // store email in cookie (for account switching)
                             app.gUser = res.sub;
                             app.gUserEmail = res.email;
+                            app.gAvatar = res.picture;
                             cookie.set('gEmail', res.email);
+                            $('.js-avatar').attr('src', app.gAvatar);
+                            $('.js-email').text(app.gUserEmail);
     
                             if(res.email) {
                                 // TODO add to sendgrid list
@@ -233,16 +240,16 @@ var app = {
                 'q': '\'appdata\' in parents'
             });
             request.execute(function(resp) {
-                // var key = new RSA({b: 512}, );
-                // console.log(key);
-
                 if (resp.items.length) {
                     // get app data file contents
                     app.getDriveFile(resp.items[0].id).then(function(res){
                         // set app data
-                        app.key = res.key;
-                        app.salt = res.salt;
-                        app.iv = res.iv;
+                        app.keys = res.keys;
+                        app.keypair = crypto.rsa.parseKeyPair(
+                            app.keys.public,
+                            app.keys.private
+                        );
+                        $('.js-public-key').val(app.keys.share);
                         $(window).trigger('app-after-setupAppData', [res]);
                         resolve();
                     });
@@ -250,9 +257,12 @@ var app = {
                     // create app data
                     app.createAppData().then(function(res){
                         // set app data
-                        app.key = res.key;
-                        app.salt = res.salt;
-                        app.iv = res.iv;
+                        app.keys = res.keys;
+                        app.keypair = crypto.rsa.parseKeyPair(
+                            app.keys.public,
+                            app.keys.private
+                        );
+                        $('.js-public-key').val(app.keys.share);
                         $(window).trigger('app-after-setupAppData', [res]);
                         resolve();
                     }, reject);
@@ -276,12 +286,9 @@ var app = {
             };
 
             // build app data
-            var keyData = crypto.generateKey();
             var appdata = {
-                // set/generate key
-                key: keyData.key,
-                salt: keyData.salt,
-                iv: keyData.iv,
+                // generate keys
+                keys: crypto.rsa.createKeys(app.gUserEmail),
                 created: new Date()
             };
 
@@ -345,43 +352,35 @@ var app = {
                         // TODO move grant logic to another method
                         var lockerKey;
                         if (res.grants && res.grants[app.gUserEmail]) {
-                            
-                            // 1. check query string for grant key
-                            if (appState.action === 'grant' && (~appState.ids.indexOf(item.id))) {
-                                var key = appState.token;
-
-                                // 2. use code/query string to decrypt grant
-                                lockerKey = crypto.decrypt(res.grants[app.gUserEmail], key, res.salt, res.iv);
+                            // 1. use private key to decrypt grant
+                            lockerKey = crypto.rsa.decrypt(app.keypair, res.grants[app.gUserEmail]);
                                 
-                                // 3. re-encrypt grant with user key and set to users list
-                                var lockerKeyEnc = crypto.encrypt(lockerKey, app.key, app.salt, app.iv);
-                                res.users[app.gUser] = lockerKeyEnc.encrypted;
+                            // 2. re-encrypt grant with user key and set to users list
+                            var lockerKeyEnc = crypto.rsa.encrypt(app.keypair, lockerKey);
+                            res.users[app.gUser] = lockerKeyEnc;
 
-                                // 4. remove grant from locker
-                                delete res.grants[app.gUserEmail];
-                            }
+                            // 3. remove grant from locker
+                            // TODO delete this on save
+                            // delete res.grants[app.gUserEmail];
                         } else {
                             // get decrypted locker key
                             var userKey = res.users[app.gUser];
                             if (userKey) {
-                                lockerKey = crypto.decrypt(userKey, app.key, app.salt, app.iv);
+                                lockerKey = crypto.rsa.decrypt(app.keypair, userKey);
                             }
                         }
 
                         // setup locker data
                         // TODO handle no userKey logic (e.g. shared through drive only, prompt for code?)
-                        if (lockerKey) {
-                            app.locker.add(res.title, {
-                                file : item.id,
-                                rows : res.rows,
-                                salt : res.salt,
-                                iv : res.iv,
-                                users: res.users,
-                                grants: res.grants || {},
-                                key: lockerKey,
-                            });
-                        }
-
+                        app.locker.add(res.title, {
+                            file : item.id,
+                            rows : res.rows,
+                            salt : res.salt,
+                            iv : res.iv,
+                            users: res.users,
+                            grants: res.grants || {},
+                            key: lockerKey
+                        });
                         loaded++;
 
                         // all lockers loaded
@@ -410,9 +409,8 @@ var app = {
     // add a locker
     ///////////////
     addLocker: function(name) {
-
         var keyData = crypto.generateKey();
-        var encryptedKey = crypto.encrypt(keyData.key, app.key, app.salt, app.iv);
+        var encryptedKey = crypto.rsa.encrypt(app.keypair, keyData.key);
         var data = {
             rows: [],
             key: keyData.key,
@@ -421,7 +419,7 @@ var app = {
             users: {},
             grants: {}
         };
-        data.users[app.gUser] = encryptedKey.encrypted;
+        data.users[app.gUser] = encryptedKey;
         var index = app.locker.add(name, data);
         app.locker.change(index);
     },
@@ -528,6 +526,11 @@ var app = {
             // with the new data from the UI
             app.locker.data[app.locker.current].rows = [];
 
+            // clear out grant if exists
+            if (app.locker.data[app.locker.current].grants[app.gUserEmail]) {
+                delete app.locker.data[app.locker.current].grants[app.gUserEmail];
+            }
+
             // encrypt passwords
             $.each(app.rows, function(i, row) {
 
@@ -586,14 +589,14 @@ var app = {
         var salt = app.locker.data[app.locker.current].salt;
         var iv = app.locker.data[app.locker.current].iv;
 
-        if(typeof(d.password) !== 'undefined' && d.password) {
+        if(typeof(d.password) !== 'undefined' && d.password && key) {
             d.password = crypto.decrypt(d.password, key, salt, iv);
         }
 
         // decrypt children passwords
         if(typeof(d.children) !== 'undefined') {
             $.each(d.children, function(i, child){
-                if(typeof(child.password) !== 'undefined') {
+                if(typeof(child.password) !== 'undefined' && child.password && key) {
                     d.children[i].password = crypto.decrypt(child.password, key, salt, iv);
                 }
             });
@@ -776,27 +779,21 @@ var app = {
     //
     // Share locker
     ///////////////////////
-    shareLocker: function(email) {
+    shareLocker: function(shareKey) {
         return new window.Promise(function(resolve, reject) {
 
             // get email
-            // TODO validate email
-            var user = email.toLowerCase();
+            var pubKey = crypto.rsa.parseShareKey(shareKey);
+            var user = pubKey.email.toLowerCase();
             var fileId = app.locker.data[app.locker.current].file;
 
             if (!user || !fileId) {
                 return false;
             }
 
-            // create encrypted grant
-            var token = crypto.generateKey();
-            var key = app.locker.data[app.locker.current].key;
-            var salt = app.locker.data[app.locker.current].salt;
-            var iv = app.locker.data[app.locker.current].iv;
-
-            // set encrypted grant using token
-            var grant = crypto.encrypt(key, token.key, salt, iv);
-            app.locker.data[app.locker.current].grants[user] = grant.encrypted;
+            // encrypt locker key using users sharekey
+            var grant = crypto.rsa.encryptPublic(pubKey.key, app.locker.data[app.locker.current].key);
+            app.locker.data[app.locker.current].grants[user] = grant;
 
             // save grant
             app.save().then(function(){
@@ -812,21 +809,22 @@ var app = {
                     resource: permission,
                     fileId: fileId,
                     fields: 'id',
-                    sendNotificationEmails: false
+                    emailMessage: app.gUserEmail + ' has shared the password group "'+app.locker.current+'" with you via Gnokey.'
+                    // sendNotificationEmails: false
                 });
                 request.execute(function(resp) { 
-                    // send email
-                    var state = JSON.stringify({
-                        ids: [fileId],
-                        action: 'grant',
-                        token: token.key
-                    });
-                    var url = window.location.href.replace('#', '').split('?')[0] + '?state=' + encodeURIComponent(state);
-                    app.sendMail(
-                        user, 
-                        'Gnokey - Shared Password Group Invite',
-                        '<p>Click the following link to accept a shared invite to the password group "' + app.locker.current + '".</p> ' + url
-                    );
+                    // // send email
+                    // var state = JSON.stringify({
+                    //     ids: [fileId],
+                    //     action: 'grant',
+                    //     token: token.key
+                    // });
+                    // var url = window.location.href.replace('#', '').split('?')[0] + '?state=' + encodeURIComponent(state);
+                    // app.sendMail(
+                    //     user, 
+                    //     'Gnokey - Shared Password Group Invite',
+                    //     '<p>Click the following link to accept a shared invite to the password group "' + app.locker.current + '".</p> ' + url
+                    // );
                     
                     // resolve
                     resolve({ 
