@@ -47,17 +47,22 @@
                               <small>Logged in as</small><br>
                               <span class="js-email"></span>
                               <div class="dropdown-divider"></div>
-                              <small data-toggle="tooltip" data-placement="bottom" title="A public ID used to enable password group sharing.">
-                                  Public ID <i class="ri-information-line"></i>
-                              </small><br>
-                              <textarea class="js-public-key" rows="3"></textarea>
+                              <small data-toggle="tooltip" data-placement="bottom" title="Give your public ID to others so they can share passwords with you">
+                                  Public ID 
+                                  <i class="ri-information-line"></i>
+                              </small>
+                              <a href="#" class="js-copy-public-id btn btn-sm btn-link" data-toggle="tooltip" data-placement="bottom" title="Copy to clipboard">
+                                <i class="ri-file-copy-line"></i>
+                              </a>
+                              <br>
+                              <textarea class="js-public-id" rows="2"></textarea>
                           </div>
                           <div class="dropdown-divider"></div>
                           <a class="js-logout dropdown-item" href="#" style="text-align:right;">Logout</a>
                         </div>
                     </li>
                     <li class="generator nav-item" data-toggle="tooltip" data-placement="bottom" title="Generate password">
-                        <a class="js-generate nav-link btn btn-sm btn-secondary">
+                        <a href="#" class="js-generate nav-link btn btn-sm btn-secondary">
                             <i class="ri-rotate-lock-fill"></i>
                         </a>
                     </li>

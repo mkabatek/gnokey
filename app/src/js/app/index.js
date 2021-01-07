@@ -249,7 +249,7 @@ var app = {
                             app.keys.public,
                             app.keys.private
                         );
-                        $('.js-public-key').val(app.keys.share);
+                        $('.js-public-id').val(app.keys.share);
                         $(window).trigger('app-after-setupAppData', [res]);
                         resolve();
                     });
@@ -262,7 +262,7 @@ var app = {
                             app.keys.public,
                             app.keys.private
                         );
-                        $('.js-public-key').val(app.keys.share);
+                        $('.js-public-id').val(app.keys.share);
                         $(window).trigger('app-after-setupAppData', [res]);
                         resolve();
                     }, reject);
@@ -777,6 +777,15 @@ var app = {
     },
 
     //
+    // Parse sharekey
+    //////////////////
+    parseShareKey: function(shareKey) {
+        var pubKey = crypto.rsa.parseShareKey(shareKey);
+        var user = pubKey.email.toLowerCase();
+        return user;
+    },
+
+    //
     // Share locker
     ///////////////////////
     shareLocker: function(shareKey) {
@@ -788,7 +797,8 @@ var app = {
             var fileId = app.locker.data[app.locker.current].file;
 
             if (!user || !fileId) {
-                return false;
+                reject();
+                return;
             }
 
             // encrypt locker key using users sharekey
@@ -812,16 +822,9 @@ var app = {
                     emailMessage: app.gUserEmail + ' has shared the password group "'+app.locker.current+'" with you via Gnokey.'
                     // sendNotificationEmails: false
                 });
-                request.execute(function(resp) { 
-                    // // send email
-                    // var state = JSON.stringify({
-                    //     ids: [fileId],
-                    //     action: 'grant',
-                    //     token: token.key
-                    // });
-                    // var url = window.location.href.replace('#', '').split('?')[0] + '?state=' + encodeURIComponent(state);
+                request.execute(function(resp) {
                     // app.sendMail(
-                    //     user, 
+                    //     user,
                     //     'Gnokey - Shared Password Group Invite',
                     //     '<p>Click the following link to accept a shared invite to the password group "' + app.locker.current + '".</p> ' + url
                     // );

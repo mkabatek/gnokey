@@ -20,6 +20,11 @@ module.exports = function(app) {
         trigger: 'hover'
     });
 
+    // prevent dropdowns from closing
+    $('body').on('click', '.dropdown-menu', function(e){
+        e.stopPropagation();
+    });
+
     // add a locker
     $('body').on('click', '.js-add-locker', function(e){
         e.preventDefault();
@@ -146,7 +151,6 @@ module.exports = function(app) {
     // generate a password
     $('body').on('click', '.js-generate', function(e){
         e.preventDefault();
-
         var password = app.generatePassword();
         var $input = $('<input type="text" class="form-control" value="'+password+'">');
         $(this).before($input);
@@ -161,6 +165,7 @@ module.exports = function(app) {
 
     // share group
     $('body').on('click', '.js-share-locker', function(e) {
+        e.preventDefault();
 
         if(!app.locker.current) {
             window.bootbox.alert({
@@ -174,11 +179,48 @@ module.exports = function(app) {
             size: 'small',
             title: 'Share "' + app.locker.current + '"',
             placeholder: 'Enter a User\'s Public ID',
+            className: 'js-public-id-dialog',
+            required: true,
             callback: function(shareKey){
                 if (shareKey) {
-                    app.shareLocker(shareKey);
+                    app.shareLocker(shareKey).then(function(result) {
+                        window.bootbox.alert({
+                            message: 'Password group successfully shared with ' + result.user,
+                            size: 'small',
+                            buttons: {
+                                ok: {
+                                    label: 'Ok',
+                                    className: 'btn-success'
+                                }
+                            }
+                        });
+                    }).catch(function() {});
                 }
             }
         });
+    });
+
+    $('body').on('input', '.js-public-id-dialog input', function(e){
+       var $input = $(e.target);
+       var val = $input.val();
+
+        if (val) {
+            try {
+                var email = app.parseShareKey(val);
+                $input.next('.error,.success').remove();
+                $input.after('<span class="success">Share with ' + email + '</span>');
+            } catch(e) {
+                $input.next('.error,.success').remove();
+                $input.after('<span class="error">Invalid Public ID</span>');
+            }
+        } else {
+            $input.next('.error,.success').remove();
+        }
+    });
+
+    $('body').on('click', '.js-copy-public-id', function(e) {
+        var $txtarea = $('.js-public-id');
+        $txtarea.select();
+        document.execCommand('copy');
     });
 };

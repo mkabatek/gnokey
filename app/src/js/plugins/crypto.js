@@ -33,8 +33,7 @@ var crypto = {
         // do the encryption
         salt = CryptoJS.enc.Base64.parse(result.salt);
         iv = CryptoJS.enc.Base64.parse(result.iv);
-        // TODO 256 and 1000 iterations?
-        var key = CryptoJS.PBKDF2(passphrase, salt, { keySize: 128/32, iterations: 100 });
+        var key = CryptoJS.PBKDF2(passphrase, salt, { keySize: 256/32, iterations: 500 });
         var encrypted = CryptoJS.AES.encrypt(data, key, { iv: iv, mode: CryptoJS.mode.CBC, padding: CryptoJS.pad.Pkcs7 });
 
         // readable str
@@ -49,7 +48,7 @@ var crypto = {
     decrypt : function(data, passphrase, salt, iv) {
         salt = CryptoJS.enc.Base64.parse(salt);
         iv = CryptoJS.enc.Base64.parse(iv);
-        var key = CryptoJS.PBKDF2(passphrase, salt, { keySize: 128/32, iterations: 100 });
+        var key = CryptoJS.PBKDF2(passphrase, salt, { keySize: 256/32, iterations: 500 });
         var decrypt = CryptoJS.AES.decrypt(data, key, { iv: iv, mode: CryptoJS.mode.CBC, padding: CryptoJS.pad.Pkcs7 });
         
         return decrypt.toString(CryptoJS.enc.Utf8); 
@@ -86,7 +85,7 @@ var crypto = {
     //////////////////////////
     generateKey: function() {
         return {
-            key: CryptoJS.lib.WordArray.random(32).toString(),
+            key: CryptoJS.lib.WordArray.random(64).toString(),
             salt: CryptoJS.lib.WordArray.random(128/8).toString(CryptoJS.enc.Base64),
             iv: CryptoJS.lib.WordArray.random(128/8).toString(CryptoJS.enc.Base64)
         };
@@ -113,7 +112,7 @@ var crypto = {
                 public: pubHex,
                 private: privateDer.toString('hex'),
                 share: emailHex+'.'+pubHex
-            }
+            };
         },
 
         // parse a hex keypair and

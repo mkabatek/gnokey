@@ -53,4 +53,18 @@ body {
         }
     }
 
+    /* --- share locker modal --- */
+    .js-public-id-dialog {
+        span.error {
+            font-size: 0.8rem;
+            color: $brand-danger;
+            margin-top: 0.4rem;
+        }
+        span.success {
+            font-size: 0.8rem;
+            color: $brand-success;
+            margin-top: 0.4rem;
+        }
+    }
+
 }
