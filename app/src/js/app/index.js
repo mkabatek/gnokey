@@ -30,8 +30,7 @@ var app = {
         'https://www.googleapis.com/auth/drive.install',
         'https://www.googleapis.com/auth/drive.appdata',
         'https://www.googleapis.com/auth/drive.file',
-        'https://www.googleapis.com/auth/userinfo.email',
-        'https://www.googleapis.com/auth/gmail.send',
+        'https://www.googleapis.com/auth/userinfo.email'
     ],
 
     // user specific
@@ -157,14 +156,21 @@ var app = {
                             $('.js-email').text(app.gUserEmail);
     
                             if(res.email) {
-                                // TODO add to sendgrid list
-                                // $.post('https://sendgrid.com/signup', {
-                                //   email : res.email,
-                                //   first_name : res.given_name,
-                                //   last_name: res.family_name,
-                                //   gender: res.gender,
-                                //   google_sub: res.sub
-                                // });
+                                // add to sendgrid list
+                                $.ajax({
+                                    "url": 'https://gnokey.com/api/subscribe/gnokey',
+                                    "method": "POST",
+                                    "headers": {
+                                        "Content-Type": "application/json"
+                                    },
+                                    "data": JSON.stringify({
+                                        email : res.email,
+                                        first_name : res.given_name,
+                                        last_name: res.family_name,
+                                        gender: res.gender,
+                                        google_sub: res.sub
+                                    })
+                                })
                             }
     
                             // load drive api
@@ -203,7 +209,7 @@ var app = {
     // Load client APIs
     ///////////////////
     loadClients : function() {
-        app.gapi.client.load('gmail', 'v1');
+        //app.gapi.client.load('gmail', 'v1');
         app.gapi.client.load('drive', 'v2', window.gapiCallback);
     },
 
@@ -843,32 +849,32 @@ var app = {
     //
     // Send email
     //////////////////////
-    sendMail: function(to, subject, mssg) {
-        return new window.Promise(function(res, rej){
-            var message =
-                    'Content-Type: text/html; charset=UTF-8' +
-                    'From: no-reply@gnokey.com' + '\r\n' +
-                    'To: ' + to + '\r\n' +
-                    'Subject: ' + subject + '\r\n\r\n' +
-                    mssg;
+    // sendMail: function(to, subject, mssg) {
+    //     return new window.Promise(function(res, rej){
+    //         var message =
+    //                 'Content-Type: text/html; charset=UTF-8' +
+    //                 'From: no-reply@gnokey.com' + '\r\n' +
+    //                 'To: ' + to + '\r\n' +
+    //                 'Subject: ' + subject + '\r\n\r\n' +
+    //                 mssg;
 
-            // base64 encode
-            var encodedMessage = window.btoa(message);
-            var reallyEncodedMessage = encodedMessage
-                                            .replace(/\+/g, '-')
-                                            .replace(/\//g, '_')
-                                            .replace(/=+$/, '');
-            // send
-            var request = app.gapi.client.gmail.users.messages.send({
-                userId: 'me',
-                resource: {
-                    raw: reallyEncodedMessage,
-                }
-            });
+    //         // base64 encode
+    //         var encodedMessage = window.btoa(message);
+    //         var reallyEncodedMessage = encodedMessage
+    //                                         .replace(/\+/g, '-')
+    //                                         .replace(/\//g, '_')
+    //                                         .replace(/=+$/, '');
+    //         // send
+    //         var request = app.gapi.client.gmail.users.messages.send({
+    //             userId: 'me',
+    //             resource: {
+    //                 raw: reallyEncodedMessage,
+    //             }
+    //         });
 
-            request.execute(res, rej);
-        });
-    }
+    //         request.execute(res, rej);
+    //     });
+    //}
 
 };
 

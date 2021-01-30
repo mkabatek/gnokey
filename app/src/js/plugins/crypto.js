@@ -14,6 +14,11 @@ var crypto = {
     encrypt : function(data, passphrase, salt, iv) {
         var result = {};
 
+        // TODO encrypt the entire "rows" array
+        // instead of each individual password
+        // and generate a new salt/iv with each
+        // encrypt to prevent rainbow table attacks
+
         // define salt if we dont have one
         if(!salt) {
             salt = CryptoJS.lib.WordArray.random(128/8);
