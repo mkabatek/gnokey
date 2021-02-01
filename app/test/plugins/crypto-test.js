@@ -25,6 +25,6 @@ describe('crypto', function () {
 
     // TODO need to load rsa.js via require
 
-    expect(true)
+    expect(true);
   });
 });

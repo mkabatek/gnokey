@@ -31,7 +31,8 @@ var cookie = {
     },
 
     delete : function(name) {
-        cookie.set(name, '', -1);
+        document.cookie = name+'=;Max-Age=-99999999;path=/;"'; 
+        //cookie.set(name, '', -1);
     }
 
 };
