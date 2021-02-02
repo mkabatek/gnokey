@@ -31,7 +31,7 @@ var cookie = {
     },
 
     delete : function(name) {
-        document.cookie = name+'=;Max-Age=-99999999;path=/;"'; 
+        document.cookie = name + '=; expires=Thu, 01-Jan-70 00:00:01 GMT;';
         //cookie.set(name, '', -1);
     }
 
