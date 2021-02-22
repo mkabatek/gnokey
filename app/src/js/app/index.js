@@ -9,7 +9,7 @@ var Locker = require('./Locker');
 
 // require app plugins (objects)
 var crypto = require('../plugins/crypto');
-var cookie = require('../plugins/cookie');
+var cookie = require('js-cookie');
 
 //
 //  Google drive based password manager
@@ -138,7 +138,7 @@ var app = {
                 }
             } else {
                 // get access_token, user & load Drive API
-                if(data.access_token && !app.gAccessToken) {
+                if(data.access_token && data.access_token !== app.gAccessToken) {
                     app.gAccessToken = data.access_token;
 
                     // Get user id
@@ -414,11 +414,39 @@ var app = {
     //
     // add a locker
     ///////////////
-    addLocker: function(name) {
+    addLocker: function(name, rows) {
         var keyData = crypto.generateKey();
         var encryptedKey = crypto.rsa.encrypt(app.keypair, keyData.key);
+
+        // encrypt rows
+        if (rows) {
+            
+            rows.forEach(function(row, i) {
+                var encryption = crypto.encrypt(row.password, keyData.key, keyData.salt, keyData.iv);
+                rows[i].password = encryption.encrypted;
+
+                // HACK: transform a LastPass import
+                if (row.url) {
+                    row.service = row.url
+                    if (~row.username.indexOf('@')) {
+                        row.email = row.username;
+                        row.username = '';
+                    }
+                }
+
+                // clear unwanted keys
+                var fields = ['service','username','email','password'];
+                Object.keys(row).forEach(function(k) {
+                    if (!~fields.indexOf(k)) {
+                        delete row[k];
+                    }
+                });
+
+            });
+        }
+
         var data = {
-            rows: [],
+            rows: rows || [],
             key: keyData.key,
             iv: keyData.iv,
             salt: keyData.salt,
@@ -530,6 +558,7 @@ var app = {
 
             // clear out the rows to be updated
             // with the new data from the UI
+            // TODO merge?
             app.locker.data[app.locker.current].rows = [];
 
             // clear out grant if exists
@@ -659,7 +688,7 @@ var app = {
             return false;
         }
 
-        cookie.delete('gEmail');
+        cookie.remove('gEmail');
         app.gUser = null;
         app.gAccessToken = null;
         app.rows = [];

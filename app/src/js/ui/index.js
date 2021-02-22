@@ -21,7 +21,7 @@ module.exports = function(app) {
     });
 
     // prevent dropdowns from closing
-    $('body').on('click', '.dropdown-menu', function(e){
+    $('body').on('click', '.dropdown-menu .profile', function(e){
         e.stopPropagation();
     });
 
@@ -29,14 +29,62 @@ module.exports = function(app) {
     $('body').on('click', '.js-add-locker', function(e){
         e.preventDefault();
 
-        window.bootbox.prompt({ 
+        window.bootbox.dialog({ 
+            message: '<form class="bootbox-form js-add-locker-form"><input name="name" class="bootbox-input bootbox-input-text form-control" autocomplete="off" type="text" placeholder="Group name"><label style="margin-top: 12px;">Import (optional)</label><input name="import" class="bootbox-input bootbox-input-file form-control" autocomplete="off" type="file" placeholder="Import CSV"></form>',
             size: 'small',
             title: 'Add Password Group',
-            placeholder: 'Group name',
-            callback: function(name){ 
-                if (name) {
-                    app.addLocker(name);
-                    $(window).trigger('app-save');
+            buttons: {
+                cancel: {
+                    label: 'Cancel',
+                    className: 'btn-default'
+                },
+                success: {
+                    label: 'Ok',
+                    className: 'btn-primary',
+                    callback: function () {
+                        var name = $('.js-add-locker-form [name="name"]').val();
+                        var files = $('.js-add-locker-form [name="import"]').prop('files');
+
+                        if (name) {
+                            // parse file
+                            if (files.length) {
+                                // TODO warn if FilerReader not available?
+                                var fileReader = new window.FileReader();
+                                fileReader.onload = function () {
+                                    var data = fileReader.result;
+                                    try {
+                                        $.csv.toObjects(data, function(err, results) {
+                                            if (err) {
+                                                throw new Error('Unable to parse import: ' + err.message);
+                                            }
+                                            if (!results.length) {
+                                                throw new Error('Unable to parse import: no passwords found!');
+                                            }
+                                            // TODO use a Worker
+                                            // https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Using_web_workers
+                                            app.addLocker(name, results);
+                                            $(window).trigger('app-save');
+                                        });
+                                    } catch(err) {
+                                        window.bootbox.alert({
+                                            message: '<i class="ri-alert-line"></i> ' + err.message,
+                                            size: 'small'
+                                        });
+                                        app.loading = false;
+                                    }
+                                    
+                                };
+                                app.loading = true;
+                                fileReader.readAsText(files[0]);
+                            } else {
+                                // create locker
+                                app.addLocker(name);
+                                $(window).trigger('app-save');
+                            }
+                        }
+                        
+                        
+                    }
                 }
             }
         });

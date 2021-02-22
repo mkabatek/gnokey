@@ -26,7 +26,7 @@ var Locker = function(el, data){
 
     // setup
     $.each(self.data, function(key) {
-        self.$el.find('.dropdown-menu').append('<li><a href="#" data-locker="'+key+'">'+key+'</a></li>');
+        self.$el.find('.dropdown-menu').append('<li><a href="#" data-locker="'+key+'"><span>'+key+'</span></a></li>');
     });
 
     if(!Object.keys(self.data).length) {
@@ -111,7 +111,7 @@ Locker.prototype.change = function(index) {
     // update dropdown
     this.$el.find('[data-locker]').removeClass('active');
     this.$el.find('[data-locker]').eq(index).addClass('active');
-    this.$el.find('.dropdown-toggle').text(locker);
+    this.$el.find('.dropdown-toggle').html('<span>' + locker + '</span>');
     this.current = locker;
 
     $(window).trigger('app-locker-change', [locker]);

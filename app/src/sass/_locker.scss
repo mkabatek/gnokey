@@ -1,9 +1,22 @@
 .dropdown {
     position: relative;
+
+    .dropdown-toggle {
+        padding: .375rem 0.5rem;
+
+        span {
+            display: inline-block;
+            font-size: 0.9rem;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100px;
+            margin-bottom: -0.4rem;
+        }
+    }
     
     .dropdown-menu {
         left: 0;
-        
+
         li {
             padding: 3px;
 
