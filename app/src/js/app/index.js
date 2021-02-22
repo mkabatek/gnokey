@@ -427,7 +427,7 @@ var app = {
 
                 // HACK: transform a LastPass import
                 if (row.url) {
-                    row.service = row.url
+                    row.service = row.url;
                     if (~row.username.indexOf('@')) {
                         row.email = row.username;
                         row.username = '';
@@ -713,7 +713,7 @@ var app = {
         }
 
         var csvContent = encodeURI('data:text/csv;charset=utf-8,');
-        csvContent += 'Row,Service,Email,Username,Password' + encodeURI('\r\n');
+        csvContent += 'row,service,email,username,password' + encodeURI('\r\n');
         app.rows.forEach(function(row) {
             csvContent += row.toCSV();
         });
