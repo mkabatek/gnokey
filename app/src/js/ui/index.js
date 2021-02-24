@@ -14,6 +14,7 @@ require('../../components/bootstrap/dist/js/umd/modal.js');
 // ui
 ////////
 module.exports = function(app) {
+    var dialogOpen = false;
 
     // enable tooltips
     $('[data-toggle="tooltip"]').tooltip({
@@ -28,6 +29,9 @@ module.exports = function(app) {
     // add a locker
     $('body').on('click', '.js-add-locker', function(e){
         e.preventDefault();
+        
+        if (dialogOpen) return;
+        dialogOpen = true;
 
         window.bootbox.dialog({ 
             message: '<form class="bootbox-form js-add-locker-form"><input name="name" class="bootbox-input bootbox-input-text form-control" autocomplete="off" type="text" placeholder="Group name"><label style="margin-top: 12px;">Import (optional)</label><input name="import" class="bootbox-input bootbox-input-file form-control" autocomplete="off" type="file" placeholder="Import CSV"></form>',
@@ -36,12 +40,16 @@ module.exports = function(app) {
             buttons: {
                 cancel: {
                     label: 'Cancel',
-                    className: 'btn-default'
+                    className: 'btn-default',
+                    callback: function(){
+                        dialogOpen = false;
+                    }
                 },
                 success: {
                     label: 'Ok',
                     className: 'btn-primary',
                     callback: function () {
+                        dialogOpen = false;
                         var name = $('.js-add-locker-form [name="name"]').val();
                         var files = $('.js-add-locker-form [name="import"]').prop('files');
 
@@ -82,7 +90,6 @@ module.exports = function(app) {
                                 $(window).trigger('app-save');
                             }
                         }
-                        
                         
                     }
                 }
@@ -248,6 +255,7 @@ module.exports = function(app) {
         });
     });
 
+    // parse a public id
     $('body').on('input', '.js-public-id-dialog input', function(e){
        var $input = $(e.target);
        var val = $input.val();
@@ -266,9 +274,20 @@ module.exports = function(app) {
         }
     });
 
+    // copy public id
     $('body').on('click', '.js-copy-public-id', function(e) {
         var $txtarea = $('.js-public-id');
         $txtarea.select();
         document.execCommand('copy');
+    });
+
+    // handle afterLoad
+    $(window).on('app-afterLoad', function(app) {
+        var queryParams = decodeURI(window.location.search);
+
+        // handle create new group
+        if (~queryParams.indexOf('"action":"create"')) {
+            $('.js-add-locker').trigger('click');
+        }
     });
 };
