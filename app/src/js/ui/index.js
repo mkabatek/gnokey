@@ -34,14 +34,20 @@ module.exports = function(app) {
         dialogOpen = true;
 
         window.bootbox.dialog({ 
-            message: '<form class="bootbox-form js-add-locker-form"><input name="name" class="bootbox-input bootbox-input-text form-control" autocomplete="off" type="text" placeholder="Group name"><label style="margin-top: 12px;">Import (optional)</label><input name="import" class="bootbox-input bootbox-input-file form-control" autocomplete="off" type="file" placeholder="Import CSV"></form>',
+            message: '<form class="bootbox-form js-add-locker-form"><input name="name" class="bootbox-input bootbox-input-text form-control" autocomplete="off" type="text" placeholder="Group name"><label style="margin-top: 12px;">Import CSV (optional)</label><input name="import" class="bootbox-input bootbox-input-file form-control" autocomplete="off" type="file" placeholder="Import CSV"></form>',
             size: 'small',
             title: 'Add Password Group',
+            onEscape: function () {
+                dialogOpen = false;
+            },
+            callback: function() {
+                dialogOpen = false;
+            },
             buttons: {
                 cancel: {
                     label: 'Cancel',
-                    className: 'btn-default',
-                    callback: function(){
+                    className: 'btn-secondary',
+                    callback: function () {
                         dialogOpen = false;
                     }
                 },

@@ -10,6 +10,10 @@ body {
         float: left;
     }
 
+    .bootbox-alert .bootbox-body {
+        margin-top: 16px;
+    }
+
     .btn {
         &:focus {
             outline: none !important;

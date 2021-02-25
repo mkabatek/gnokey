@@ -122,16 +122,20 @@ var app = {
 
             if(data.error) {
                 if(app.debug) {
-                    console.error('gapi:','error', data.error);
+                    console.error('gapi:','error', data.details);
+                    window.bootbox.alert({
+                        message: '<i class="ri-alert-line"></i> unable to load Google login session. You may be in private / incognito mode or have cookies disabled.',
+                        size: 'small'
+                    });
                 }
 
                 gEmail = cookie.get('gEmail');
                 if(data.error === 'immediate_failed' && gEmail) {
                     // auth w/out immediate
                     app.gapi.client.init({
-                        'apiKey': app.gClientSecret,
-                        'clientId': app.gClientId,
-                        'scope': app.gScopes
+                        apiKey: app.gClientSecret,
+                        clientId: app.gClientId,
+                        scope: app.gScopes
                     }).then(window.gapiCallback);
                 } else {
                     app.loading = false;
