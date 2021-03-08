@@ -494,7 +494,7 @@ var app = {
         app.ajaxLoading = true;
 
         // delete file
-        var request = app.gapi.client.drive.files.delete({
+        var request = app.gapi.client.drive.files.trash({
           'fileId': file
         });
 

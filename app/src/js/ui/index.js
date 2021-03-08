@@ -26,6 +26,12 @@ module.exports = function(app) {
         e.stopPropagation();
     });
 
+    // prevent bootbox from submitting
+    $(document).on("submit", ".bootbox form", function(e) {
+        e.preventDefault();
+        $(".bootbox .btn-primary").click();
+    });
+
     // add a locker
     $('body').on('click', '.js-add-locker', function(e){
         e.preventDefault();
