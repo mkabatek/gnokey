@@ -1,4 +1,0 @@
-#! /bin/sh
-
-# TODO bump version
-git push origin `git subtree split --prefix public master`:gh-pages --force
